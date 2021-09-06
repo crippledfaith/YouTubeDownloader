@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using DotNetTools.SharpGrabber;
 using DotNetTools.SharpGrabber.Grabbed;
@@ -7,15 +9,18 @@ namespace YouTubeDownLoader
 {
     public class GrabbedMediaVideoModel
     {
-        readonly char[] _invalidFileNameChars = Path.GetInvalidFileNameChars();
+        readonly List<char> _invalidFileNameChars = Path.GetInvalidFileNameChars().ToList();
 
         public GrabbedMediaVideoModel(GrabbedMedia media, GrabResult result)
         {
             GrabbedMedia = media;
             GrabResult = result;
+            _invalidFileNameChars.Add('\'');
         }
         public GrabbedMedia GrabbedMedia { get; set; }
         public GrabResult GrabResult { get; set; }
+
+        public string RandomFileName => $"{Guid.NewGuid()}.{ GrabbedMedia.Format.Extension}";
 
         public string ValidFileName
         {

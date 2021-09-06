@@ -4,13 +4,21 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
     <RootNamespace>YouTubeDownLoader</RootNamespace>
     <AssemblyName>YouTubeDownLoader</AssemblyName>
     <ApplicationIcon>icon.ico</ApplicationIcon>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <Platforms>AnyCPU;x64</Platforms>
+    <Version>1.0.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="ffmpeg.exe" />
+    <None Remove="ffprobe.exe" />
     <None Remove="icon.ico" />
   </ItemGroup>
 
@@ -18,10 +26,18 @@
     <EmbeddedResource Include="ffmpeg.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="ffprobe.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Properties\PublishProfiles\FolderProfile.pubxml.user" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FFMpegCore" Version="4.5.0" />
+    <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
     <PackageReference Include="MahApps.Metro" Version="2.4.7" />
     <PackageReference Include="MahApps.Metro.IconPacks" Version="1.6.0" />
     <PackageReference Include="SharpGrabber.YouTube" Version="1.0.0" />
