@@ -154,7 +154,7 @@ namespace YouTubeDownLoader
                     }
                 }
             }
-            catch (Exception exception)
+            catch (Exception)
             {
                 MessageBox.Show("Invalid Youtube Link.", "Youtube DownLoader", MessageBoxButton.OK,
                     MessageBoxImage.Error);
