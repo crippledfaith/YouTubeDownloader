@@ -76,7 +76,6 @@ namespace YouTubeDownLoader
             catch (Exception exception)
             {
                 MessageBox.Show("Invalid Youtube Link.", "Youtube DownLoader", MessageBoxButton.OK, MessageBoxImage.Error);
-                throw;
             }
 
 
@@ -93,13 +92,16 @@ namespace YouTubeDownLoader
 
             var videoModel = (GrabbedMediaVideoModel)VideoTypeCombobox.SelectedItem;
             var videoLocalFilePath = Path.Combine(tempFolder, videoModel.ValidFileName);
-            if (!File.Exists(videoLocalFilePath))
-                await startDownload(videoModel.GrabbedMedia.ResourceUri.AbsoluteUri, videoLocalFilePath);
+            if (File.Exists(videoLocalFilePath))
+                File.Delete(videoLocalFilePath);
+
+            await startDownload(videoModel.GrabbedMedia.ResourceUri.AbsoluteUri, videoLocalFilePath);
 
             var audioModel = (GrabbedMediaVideoModel)AudioTypeCombobox.SelectedItem;
             var audioLocalFilePath = Path.Combine(tempFolder, audioModel.ValidFileName);
-            if (!File.Exists(audioLocalFilePath))
-                await startDownload(audioModel.GrabbedMedia.ResourceUri.AbsoluteUri, audioLocalFilePath);
+            if (File.Exists(audioLocalFilePath))
+                File.Delete(videoLocalFilePath);
+            await startDownload(audioModel.GrabbedMedia.ResourceUri.AbsoluteUri, audioLocalFilePath);
 
 
             var finalFilePath = Path.Combine(finalPath, videoModel.ValidFileName);
