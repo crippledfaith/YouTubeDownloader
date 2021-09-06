@@ -160,7 +160,7 @@ namespace YouTubeDownLoader
                 File.Delete(videoLocalFilePath);
 
 
-                MessageBox.Show("Download Completed", "Youtube DownLoader", MessageBoxButton.OK,
+                MessageBox.Show($"Download Completed.\nFile:{finalFilePath}", "Youtube DownLoader", MessageBoxButton.OK,
                     MessageBoxImage.Information);
             }
             catch (Exception exception)
