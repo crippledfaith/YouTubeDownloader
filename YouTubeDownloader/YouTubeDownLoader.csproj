@@ -39,7 +39,7 @@
     <PackageReference Include="FFMpegCore" Version="4.5.0" />
     <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
     <PackageReference Include="MahApps.Metro" Version="2.4.7" />
-    <PackageReference Include="MahApps.Metro.IconPacks" Version="1.6.0" />
+    <PackageReference Include="MahApps.Metro.IconPacks" Version="4.8.0" />
     <PackageReference Include="SharpClipboard" Version="3.5.2" />
     <PackageReference Include="SharpGrabber.YouTube" Version="1.0.0" />
   </ItemGroup>

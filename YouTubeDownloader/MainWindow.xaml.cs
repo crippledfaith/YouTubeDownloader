@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -31,6 +29,7 @@ namespace YouTubeDownLoader
 
         public MainWindow()
         {
+            
             InitializeComponent();
             _clipboard.ClipboardChanged += ClipboardChanged;
 
@@ -114,7 +113,7 @@ namespace YouTubeDownLoader
         {
             if (string.IsNullOrEmpty(LinkTextBox.Text))
             {
-                MessageBox.Show("Invalid Youtube Link.", "Youtube DownLoader", MessageBoxButton.OK,
+                MessageBox.Show(this, "Invalid Youtube Link.", "Youtube DownLoader", MessageBoxButton.OK,
                     MessageBoxImage.Error);
                 return;
             }
@@ -123,6 +122,7 @@ namespace YouTubeDownLoader
             Grid.IsEnabled = false;
             try
             {
+                
                 var grabber = GrabberBuilder.New()
                     .UseDefaultServices()
                     .AddYouTube()
@@ -131,19 +131,17 @@ namespace YouTubeDownLoader
                 if (result != null)
                 {
                     var info = result.Resource<GrabbedInfo>();
-                    Console.WriteLine("Time Length: {0}", info.Length);
                     var images = result.Resources<GrabbedImage>();
-                    var videos = result.Resources<GrabbedMedia>();
-                    var originalUri = images.FirstOrDefault().ResourceUri;
+                    var media = result.Resources<GrabbedMedia>();
+                    var originalUri = images.FirstOrDefault()?.ResourceUri;
                     VideoImage.Source = new BitmapImage(originalUri);
                     TitleLabel.Content = result.Title;
                     AuthorLabel.Content = info.Author;
                     ViewLabel.Content = info.ViewCount;
-                    VideoTypeCombobox.ItemsSource = videos
-                        .Where(q => q.Channels == MediaChannels.Video && q.Format.Extension == "mp4")
+                    VideoTypeCombobox.ItemsSource = media.Where(q => q.Channels == MediaChannels.Video && q.Format.Extension == "mp4")
                         .Distinct(new GrabbedMediaComparer())
                         .Select(q => new GrabbedMediaVideoModel(q, result)).ToList();
-                    AudioTypeCombobox.ItemsSource = videos.Where(q => q.Channels == MediaChannels.Audio)
+                    AudioTypeCombobox.ItemsSource = media.Where(q => q.Channels == MediaChannels.Audio)
                         .Distinct(new GrabbedMediaComparer())
                         .Select(q => new GrabbedMediaVideoModel(q, result)).ToList();
                     VideoTypeCombobox.SelectedIndex = 0;
@@ -156,7 +154,7 @@ namespace YouTubeDownLoader
             }
             catch (Exception)
             {
-                MessageBox.Show("Invalid Youtube Link.", "Youtube DownLoader", MessageBoxButton.OK,
+                MessageBox.Show(this, "Invalid Youtube Link.", "Youtube DownLoader", MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
 
@@ -188,7 +186,7 @@ namespace YouTubeDownLoader
                     videoLocalFilePath = Path.Combine(tempFolder, videoModel.RandomFileName);
                     if (File.Exists(videoLocalFilePath))
                         File.Delete(videoLocalFilePath);
-
+                    
                     await StartDownload(videoModel.GrabbedMedia.ResourceUri.AbsoluteUri, videoLocalFilePath);
                     finalFilePath = Path.Combine(finalPath, videoModel.ValidFileName);
                 }
@@ -227,12 +225,12 @@ namespace YouTubeDownLoader
 
                 }
 
-                MessageBox.Show($"Download Completed.\nFile:{finalFilePath}", "Youtube DownLoader", MessageBoxButton.OK,
+                MessageBox.Show(this,$"Download Completed.\nFile:{finalFilePath}", "Youtube DownLoader", MessageBoxButton.OK,
                     MessageBoxImage.Information);
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message, "Youtube DownLoader", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, exception.Message, "Youtube DownLoader", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
