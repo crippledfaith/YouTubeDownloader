@@ -398,24 +398,11 @@ namespace YouTubeDownLoader
             ProgressBar.Value = 0;
         }
 
-        #endregion
-
-        #region UI Event Methords
-        private async void VideoTypeComboboxOnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            await UpdateDownloadSize();
-        }
-
-        private async void AudioTypeComboboxOnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            await UpdateDownloadSize();
-        }
-
         private async Task UpdateDownloadSize()
         {
             var size = 0d;
-            var videoModel = (GrabbedMediaVideoModel) VideoTypeCombobox.SelectedItem;
-            var audioModel = (GrabbedMediaVideoModel) AudioTypeCombobox.SelectedItem;
+            var videoModel = (GrabbedMediaVideoModel)VideoTypeCombobox.SelectedItem;
+            var audioModel = (GrabbedMediaVideoModel)AudioTypeCombobox.SelectedItem;
             if (VideoCheckBox.IsChecked.HasValue && VideoCheckBox.IsChecked.Value)
             {
                 if (videoModel != null)
@@ -432,7 +419,30 @@ namespace YouTubeDownLoader
                 }
             }
 
+            if (Math.Abs(size) < .1)
+            {
+                IsEnableDownloadButton(false,false);
+            }
+            else
+            {
+                IsEnableDownloadButton(true);
+
+            }
             DownloadButton.Content = $"{SizeSuffix(size)}";
+        }
+
+
+        #endregion
+
+        #region UI Event Methords
+        private async void VideoTypeComboboxOnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            await UpdateDownloadSize();
+        }
+
+        private async void AudioTypeComboboxOnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            await UpdateDownloadSize();
         }
 
         private void SettingButtonOnClick(object sender, RoutedEventArgs e)
