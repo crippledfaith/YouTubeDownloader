@@ -29,7 +29,7 @@ namespace YouTubeDownLoader
                 var formattableString = $"{ GrabResult.Title}-{ FormatTitle }.{ GrabbedMedia.Format.Extension}";
 
                 var validFilename = new string(formattableString
-                    .Where(ch => !_invalidFileNameChars.Contains(ch)).ToArray()).Replace(" ", "");
+                    .Where(ch => !_invalidFileNameChars.Contains(ch)).ToArray());
 
                 return validFilename;
             }

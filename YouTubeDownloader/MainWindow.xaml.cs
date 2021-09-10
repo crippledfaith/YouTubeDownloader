@@ -108,12 +108,10 @@ namespace YouTubeDownLoader
                 return;
             }
 
-
             EnableControls(false);
             IsEnableDownloadButton(false, false);
             try
             {
-
                 var grabber = GrabberBuilder.New()
                     .UseDefaultServices()
                     .AddYouTube()
@@ -293,15 +291,9 @@ namespace YouTubeDownLoader
             Application.Current.Dispatcher.Invoke(() =>
             {
                 var progress = timeSpan.TotalSeconds / duration.TotalSeconds * 100;
-                ProgressTextBlock.Text = $"{_progessTypeMessage} {progress:F1}%";
+                ProgressTextBlock.Text = $"{_progessTypeMessage} {progress:F1}% - ({timeSpan:g}/{duration:g})";
                 ProgressBar.Value = progress;
             });
-        }
-
-        private async Task StartDownload(string url, string localPath, CancellationToken cancellationToken)
-        {
-            await using var fileStream = File.Create(localPath);
-            await DownloadFileAsync(new Uri(url), fileStream, cancellationToken, ProgressCallback);
         }
         private void ProgressCallback(long bytesReceived, long totalBytesToReceive)
         {
@@ -315,6 +307,12 @@ namespace YouTubeDownLoader
             });
         }
 
+        private async Task StartDownload(string url, string localPath, CancellationToken cancellationToken)
+        {
+            await using var fileStream = File.Create(localPath);
+            await DownloadFileAsync(new Uri(url), fileStream, cancellationToken, ProgressCallback);
+        }
+   
         public async Task DownloadFileAsync(Uri uri, Stream toStream, CancellationToken cancellationToken = default, Action<long, long> progressCallback = null)
         {
             if (uri == null)
