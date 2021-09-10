@@ -1,9 +1,7 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading;
@@ -20,17 +18,20 @@ using WK.Libraries.SharpClipboardNS;
 
 namespace YouTubeDownLoader
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow
     {
+        #region Private Class Variables
+
         private readonly SharpClipboard _clipboard = new SharpClipboard();
         private bool _monitorClipboard = true;
         private string _progessTypeMessage = "";
         private CancellationTokenSource _cancellationTokenSource;
         private readonly string[] _sizeSuffixes =
             {"bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
+
+        #endregion
+
+        #region Constructor
 
         public MainWindow()
         {
@@ -90,36 +91,13 @@ namespace YouTubeDownLoader
                 }
             }
 
-
             var ffOptions = new FFOptions { BinaryFolder = currentDirectory };
             GlobalFFOptions.Configure(ffOptions);
         }
 
-        private void ClipboardChanged(object sender, SharpClipboard.ClipboardChangedEventArgs e)
-        {
-            if (!_monitorClipboard)
-                return;
-            if (e.ContentType == SharpClipboard.ContentTypes.Text)
-            {
-                var clipboardText = _clipboard.ClipboardText.ToLower();
-                if (clipboardText.Contains("https://www.youtube.com/") || clipboardText.Contains("https://youtu.be"))
-                {
-                    LinkTextBox.Text = _clipboard.ClipboardText;
-                }
-            }
+        #endregion
 
-        }
-
-        private async void AddButtonClick(object sender, RoutedEventArgs e)
-        {
-            await ExtractFileData();
-        }
-
-        private async void LinkTextBoxOnKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-                await ExtractFileData();
-        }
+        #region Main Methords
 
         private async Task ExtractFileData()
         {
@@ -164,7 +142,7 @@ namespace YouTubeDownLoader
                     DownloadButton.IsEnabled = true;
                     if (AutoStartCheckBox.IsChecked.HasValue && AutoStartCheckBox.IsChecked.Value)
                     {
-                        await DownloadFile();
+                        await StartDownloadingProcess();
                     }
                 }
             }
@@ -177,35 +155,7 @@ namespace YouTubeDownLoader
             EnableControls(true);
         }
 
-        private void EnableControls(bool enable)
-        {
-            AddVideoPanel.IsEnabled = enable;
-            SettingButton.IsEnabled = enable;
-            SettingsGrid.IsEnabled = enable;
-
-            _monitorClipboard = enable;
-        }
-
-        private void IsEnableDownloadButton(bool enable, bool? cancelEnable = null)
-        {
-            DownloadButton.IsEnabled = enable;
-            if (cancelEnable.HasValue)
-            {
-                CancelButton.IsEnabled = cancelEnable.Value;
-            }
-            else
-            {
-                CancelButton.IsEnabled = !enable;
-            }
-        }
-
-
-        private async void DownloadButtonOnClick(object sender, RoutedEventArgs e)
-        {
-            await DownloadFile();
-        }
-
-        private async Task DownloadFile()
+        private async Task StartDownloadingProcess()
         {
             EnableControls(false);
             IsEnableDownloadButton(false);
@@ -298,6 +248,45 @@ namespace YouTubeDownLoader
             IsEnableDownloadButton(true);
         }
 
+        #endregion
+
+        #region Helper Methords
+
+        private void ClipboardChanged(object sender, SharpClipboard.ClipboardChangedEventArgs e)
+        {
+            if (!_monitorClipboard)
+                return;
+            if (e.ContentType == SharpClipboard.ContentTypes.Text)
+            {
+                var clipboardText = _clipboard.ClipboardText.ToLower();
+                if (clipboardText.Contains("https://www.youtube.com/") || clipboardText.Contains("https://youtu.be"))
+                {
+                    LinkTextBox.Text = _clipboard.ClipboardText;
+                }
+            }
+        }
+
+        private void EnableControls(bool enable)
+        {
+            AddVideoPanel.IsEnabled = enable;
+            SettingButton.IsEnabled = enable;
+            SettingsGrid.IsEnabled = enable;
+
+            _monitorClipboard = enable;
+        }
+
+        private void IsEnableDownloadButton(bool enable, bool? cancelEnable = null)
+        {
+            DownloadButton.IsEnabled = enable;
+            if (cancelEnable.HasValue)
+            {
+                CancelButton.IsEnabled = cancelEnable.Value;
+            }
+            else
+            {
+                CancelButton.IsEnabled = !enable;
+            }
+        }
 
         private void OnPercentageProgress(TimeSpan timeSpan, TimeSpan duration)
         {
@@ -309,17 +298,11 @@ namespace YouTubeDownLoader
             });
         }
 
-
-
         private async Task StartDownload(string url, string localPath, CancellationToken cancellationToken)
         {
-            using (var fileStream = File.Create(localPath))
-            {
-                await DownloadFileAsync(new Uri(url), fileStream, cancellationToken, ProgressCallback);
-            }
-
+            await using var fileStream = File.Create(localPath);
+            await DownloadFileAsync(new Uri(url), fileStream, cancellationToken, ProgressCallback);
         }
-
         private void ProgressCallback(long bytesReceived, long totalBytesToReceive)
         {
             Application.Current.Dispatcher.Invoke(() =>
@@ -364,7 +347,6 @@ namespace YouTubeDownLoader
 
         }
 
-
         private string SizeSuffix(double value, int decimalPlaces = 1)
         {
             if (decimalPlaces < 0)
@@ -407,6 +389,10 @@ namespace YouTubeDownLoader
             ProgressTextBlock.Text = $"";
             ProgressBar.Value = 0;
         }
+        
+        #endregion
+
+        #region UI Event Methords
 
         private void SettingButtonOnClick(object sender, RoutedEventArgs e)
         {
@@ -416,6 +402,17 @@ namespace YouTubeDownLoader
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
             settingWindow.ShowDialog();
+        }
+
+        private async void AddButtonClick(object sender, RoutedEventArgs e)
+        {
+            await ExtractFileData();
+        }
+
+        private async void LinkTextBoxOnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+                await ExtractFileData();
         }
 
         private async void LinkTextBoxOnTextChanged(object sender, TextChangedEventArgs e)
@@ -446,11 +443,17 @@ namespace YouTubeDownLoader
             }
         }
 
+        private async void DownloadButtonOnClick(object sender, RoutedEventArgs e)
+        {
+            await StartDownloadingProcess();
+        }
+
         private void CancelButtonOnClick(object sender, RoutedEventArgs e)
         {
             _cancellationTokenSource.Cancel();
         }
+        
+        #endregion
 
- 
     }
 }
