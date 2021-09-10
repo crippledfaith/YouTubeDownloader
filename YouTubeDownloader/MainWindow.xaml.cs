@@ -1,17 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using DotNetTools.SharpGrabber;
 using DotNetTools.SharpGrabber.Grabbed;
 using FFMpegCore;
+using FFMpegCore.Enums;
 using WK.Libraries.SharpClipboardNS;
 
 namespace YouTubeDownLoader
@@ -23,14 +27,15 @@ namespace YouTubeDownLoader
     {
         private readonly SharpClipboard _clipboard = new SharpClipboard();
         private bool _monitorClipboard = true;
-
+        private string _progessTypeMessage = "";
+        private CancellationTokenSource _cancellationTokenSource;
         private readonly string[] _sizeSuffixes =
             {"bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
 
         public MainWindow()
         {
-            
             InitializeComponent();
+            IsEnableDownloadButton(false, false);
             _clipboard.ClipboardChanged += ClipboardChanged;
 
             if (string.IsNullOrEmpty(Properties.Settings.Default.DownloadPath))
@@ -85,7 +90,8 @@ namespace YouTubeDownLoader
                 }
             }
 
-            var ffOptions = new FFOptions {BinaryFolder = currentDirectory};
+
+            var ffOptions = new FFOptions { BinaryFolder = currentDirectory };
             GlobalFFOptions.Configure(ffOptions);
         }
 
@@ -104,9 +110,15 @@ namespace YouTubeDownLoader
 
         }
 
-        private async void AddButton_Click(object sender, RoutedEventArgs e)
+        private async void AddButtonClick(object sender, RoutedEventArgs e)
         {
             await ExtractFileData();
+        }
+
+        private async void LinkTextBoxOnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+                await ExtractFileData();
         }
 
         private async Task ExtractFileData()
@@ -118,11 +130,12 @@ namespace YouTubeDownLoader
                 return;
             }
 
-            _monitorClipboard = false;
-            Grid.IsEnabled = false;
+
+            EnableControls(false);
+            IsEnableDownloadButton(false, false);
             try
             {
-                
+
                 var grabber = GrabberBuilder.New()
                     .UseDefaultServices()
                     .AddYouTube()
@@ -139,27 +152,51 @@ namespace YouTubeDownLoader
                     AuthorLabel.Content = info.Author;
                     ViewLabel.Content = info.ViewCount;
                     VideoTypeCombobox.ItemsSource = media.Where(q => q.Channels == MediaChannels.Video && q.Format.Extension == "mp4")
-                        .Distinct(new GrabbedMediaComparer())
+                        .Distinct(new GrabbedMediaEqualityComparer())
+                        .OrderBy(q => q, new GrabbedMediaComparer())
                         .Select(q => new GrabbedMediaVideoModel(q, result)).ToList();
                     AudioTypeCombobox.ItemsSource = media.Where(q => q.Channels == MediaChannels.Audio)
-                        .Distinct(new GrabbedMediaComparer())
+                        .Distinct(new GrabbedMediaEqualityComparer())
+                        .OrderBy(q => q, new GrabbedMediaComparer())
                         .Select(q => new GrabbedMediaVideoModel(q, result)).ToList();
                     VideoTypeCombobox.SelectedIndex = 0;
                     AudioTypeCombobox.SelectedIndex = 0;
+                    DownloadButton.IsEnabled = true;
                     if (AutoStartCheckBox.IsChecked.HasValue && AutoStartCheckBox.IsChecked.Value)
                     {
                         await DownloadFile();
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 MessageBox.Show(this, "Invalid Youtube Link.", "Youtube DownLoader", MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
+            IsEnableDownloadButton(true);
+            EnableControls(true);
+        }
 
-            Grid.IsEnabled = true;
-            _monitorClipboard = true;
+        private void EnableControls(bool enable)
+        {
+            AddVideoPanel.IsEnabled = enable;
+            SettingButton.IsEnabled = enable;
+            SettingsGrid.IsEnabled = enable;
+
+            _monitorClipboard = enable;
+        }
+
+        private void IsEnableDownloadButton(bool enable, bool? cancelEnable = null)
+        {
+            DownloadButton.IsEnabled = enable;
+            if (cancelEnable.HasValue)
+            {
+                CancelButton.IsEnabled = cancelEnable.Value;
+            }
+            else
+            {
+                CancelButton.IsEnabled = !enable;
+            }
         }
 
 
@@ -170,24 +207,26 @@ namespace YouTubeDownLoader
 
         private async Task DownloadFile()
         {
-            _monitorClipboard = false;
-            Grid.IsEnabled = false;
+            EnableControls(false);
+            IsEnableDownloadButton(false);
+            _cancellationTokenSource = new CancellationTokenSource();
             var videoLocalFilePath = "";
             var audioLocalFilePath = "";
             var finalFilePath = "";
             try
             {
+
                 var tempFolder = Properties.Settings.Default.DownloadPath;
                 var finalPath = Properties.Settings.Default.FinalPath;
-                var videoModel = (GrabbedMediaVideoModel) VideoTypeCombobox.SelectedItem;
-                var audioModel = (GrabbedMediaVideoModel) AudioTypeCombobox.SelectedItem;
+                var videoModel = (GrabbedMediaVideoModel)VideoTypeCombobox.SelectedItem;
+                var audioModel = (GrabbedMediaVideoModel)AudioTypeCombobox.SelectedItem;
                 if (VideoCheckBox.IsChecked.HasValue && VideoCheckBox.IsChecked.Value)
                 {
                     videoLocalFilePath = Path.Combine(tempFolder, videoModel.RandomFileName);
                     if (File.Exists(videoLocalFilePath))
                         File.Delete(videoLocalFilePath);
-                    
-                    await StartDownload(videoModel.GrabbedMedia.ResourceUri.AbsoluteUri, videoLocalFilePath);
+                    _progessTypeMessage = "Downloading Video: ";
+                    await StartDownload(videoModel.GrabbedMedia.ResourceUri.AbsoluteUri, videoLocalFilePath, _cancellationTokenSource.Token);
                     finalFilePath = Path.Combine(finalPath, videoModel.ValidFileName);
                 }
 
@@ -196,7 +235,9 @@ namespace YouTubeDownLoader
                     audioLocalFilePath = Path.Combine(tempFolder, audioModel.RandomFileName);
                     if (File.Exists(audioLocalFilePath))
                         File.Delete(audioLocalFilePath);
-                    await StartDownload(audioModel.GrabbedMedia.ResourceUri.AbsoluteUri, audioLocalFilePath);
+                    _progessTypeMessage = "Downloading Audio: ";
+
+                    await StartDownload(audioModel.GrabbedMedia.ResourceUri.AbsoluteUri, audioLocalFilePath, _cancellationTokenSource.Token);
                     if (string.IsNullOrEmpty(finalFilePath))
                     {
                         finalFilePath = Path.Combine(finalPath, audioModel.ValidFileName);
@@ -209,28 +250,40 @@ namespace YouTubeDownLoader
                 if (VideoCheckBox.IsChecked.HasValue && VideoCheckBox.IsChecked.Value &&
                     AudioCheckBox.IsChecked.HasValue && AudioCheckBox.IsChecked.Value)
                 {
-                    await Task.Run(
-                        () => { FFMpeg.ReplaceAudio(videoLocalFilePath, audioLocalFilePath, finalFilePath); });
+                    var mediaAnalysis = await FFProbe.AnalyseAsync(videoLocalFilePath);
+
+                    var duration = mediaAnalysis.Duration;
+
+                    _progessTypeMessage = "Merging: ";
+                    _ = await FFMpegArguments
+                        .FromFileInput(videoLocalFilePath)
+                        .AddFileInput(audioLocalFilePath)
+                        .OutputToFile(finalFilePath, true, options => options
+                            .CopyChannel()
+                            .WithAudioCodec(AudioCodec.Aac)
+                            .WithAudioBitrate(AudioQuality.Good))
+                        .NotifyOnProgress(q => { OnPercentageProgress(q, duration); })
+                        .CancellableThrough(_cancellationTokenSource.Token)
+                        .ProcessAsynchronously();
+
                 }
                 else
                 {
-                    if (string.IsNullOrEmpty(videoLocalFilePath))
-                    {
-                        File.Copy(audioLocalFilePath, finalFilePath);
-                    }
-                    else
-                    {
-                        File.Copy(videoLocalFilePath, finalFilePath);
-                    }
-
+                    File.Copy(string.IsNullOrEmpty(videoLocalFilePath) ?
+                            audioLocalFilePath :
+                            videoLocalFilePath,
+                        finalFilePath);
                 }
 
-                MessageBox.Show(this,$"Download Completed.\nFile:{finalFilePath}", "Youtube DownLoader", MessageBoxButton.OK,
+                MessageBox.Show(this, $"Download Completed.\nFile:{finalFilePath}", "Youtube DownLoader", MessageBoxButton.OK,
                     MessageBoxImage.Information);
             }
             catch (Exception exception)
             {
-                MessageBox.Show(this, exception.Message, "Youtube DownLoader", MessageBoxButton.OK, MessageBoxImage.Error);
+                if (!_cancellationTokenSource.IsCancellationRequested)
+                {
+                    MessageBox.Show(this, exception.Message, "Youtube DownLoader", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
             finally
             {
@@ -240,29 +293,77 @@ namespace YouTubeDownLoader
                     File.Delete(videoLocalFilePath);
             }
 
-            _monitorClipboard = true;
-            Grid.IsEnabled = true;
+            ResetProgress();
+            EnableControls(true);
+            IsEnableDownloadButton(true);
         }
 
-        private async Task StartDownload(string url, string localPath)
-        {
-            WebClient client = new WebClient();
-            client.DownloadProgressChanged += client_DownloadProgressChanged;
-            client.DownloadFileCompleted += client_DownloadFileCompleted;
-            await client.DownloadFileTaskAsync(new Uri(url), localPath);
-        }
 
-        void client_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        private void OnPercentageProgress(TimeSpan timeSpan, TimeSpan duration)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                double bytesIn = double.Parse(e.BytesReceived.ToString());
-                double totalBytes = double.Parse(e.TotalBytesToReceive.ToString());
+                var progress = timeSpan.TotalSeconds / duration.TotalSeconds * 100;
+                ProgressTextBlock.Text = $"{_progessTypeMessage} {progress:F1}%";
+                ProgressBar.Value = progress;
+            });
+        }
+
+
+
+        private async Task StartDownload(string url, string localPath, CancellationToken cancellationToken)
+        {
+            using (var fileStream = File.Create(localPath))
+            {
+                await DownloadFileAsync(new Uri(url), fileStream, cancellationToken, ProgressCallback);
+            }
+
+        }
+
+        private void ProgressCallback(long bytesReceived, long totalBytesToReceive)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                double bytesIn = bytesReceived;
+                double totalBytes = totalBytesToReceive;
                 double percentage = bytesIn / totalBytes * 100;
-                ProgressTextBlock.Text = $"{percentage:F1}% - ({SizeSuffix(bytesIn)}/{SizeSuffix(totalBytes)})";
+                ProgressTextBlock.Text = $"{_progessTypeMessage} {percentage:F1}% - ({SizeSuffix(bytesIn)}/{SizeSuffix(totalBytes)})";
                 ProgressBar.Value = int.Parse(Math.Truncate(percentage).ToString());
             });
         }
+
+        public async Task DownloadFileAsync(Uri uri, Stream toStream, CancellationToken cancellationToken = default, Action<long, long> progressCallback = null)
+        {
+            if (uri == null)
+                throw new ArgumentNullException(nameof(uri));
+            if (toStream == null)
+                throw new ArgumentNullException(nameof(toStream));
+
+            using HttpClient client = new HttpClient();
+            using HttpResponseMessage response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+
+            if (progressCallback != null)
+            {
+                long length = response.Content.Headers.ContentLength ?? -1;
+                await using Stream stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                byte[] buffer = new byte[4096];
+                int read;
+                int totalRead = 0;
+                while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) > 0)
+                {
+                    await toStream.WriteAsync(buffer, 0, read, cancellationToken).ConfigureAwait(false);
+                    totalRead += read;
+                    progressCallback(totalRead, length);
+                }
+                Debug.Assert(totalRead == length || length == -1);
+            }
+            else
+            {
+                await response.Content.CopyToAsync(toStream).ConfigureAwait(false);
+            }
+
+        }
+
 
         private string SizeSuffix(double value, int decimalPlaces = 1)
         {
@@ -282,11 +383,11 @@ namespace YouTubeDownLoader
             }
 
             // mag is 0 for bytes, 1 for KB, 2, for MB, etc.
-            int mag = (int) Math.Log(value, 1024);
+            int mag = (int)Math.Log(value, 1024);
 
             // 1L << (mag * 10) == 2 ^ (10 * mag) 
             // [i.e. the number of bytes in the unit corresponding to mag]
-            decimal adjustedSize = (decimal) value / (1L << (mag * 10));
+            decimal adjustedSize = (decimal)value / (1L << (mag * 10));
 
             // make adjustment when the value is large enough that
             // it would round up to 1000 or more
@@ -301,20 +402,19 @@ namespace YouTubeDownLoader
                 _sizeSuffixes[mag]);
         }
 
-        void client_DownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
+        private void ResetProgress()
         {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                ProgressTextBlock.Text = $"";
-                ProgressBar.Value = 0;
-            });
+            ProgressTextBlock.Text = $"";
+            ProgressBar.Value = 0;
         }
 
         private void SettingButtonOnClick(object sender, RoutedEventArgs e)
         {
-            var settingWindow = new SettingWindow();
-            settingWindow.Owner = this;
-            settingWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            var settingWindow = new SettingWindow
+            {
+                Owner = this,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
             settingWindow.ShowDialog();
         }
 
@@ -345,18 +445,12 @@ namespace YouTubeDownLoader
                 VideoCheckBox.IsChecked = true;
             }
         }
-    }
 
-    class GrabbedMediaComparer : EqualityComparer<GrabbedMedia>
-    {
-        public override bool Equals(GrabbedMedia x, GrabbedMedia y)
+        private void CancelButtonOnClick(object sender, RoutedEventArgs e)
         {
-            return x.FormatTitle == y.FormatTitle && x.BitRateString == y.BitRateString; 
+            _cancellationTokenSource.Cancel();
         }
 
-        public override int GetHashCode(GrabbedMedia obj)
-        {
-            return obj.FormatTitle.GetHashCode();
-        }
+ 
     }
 }
