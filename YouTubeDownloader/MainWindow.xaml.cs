@@ -126,7 +126,8 @@ namespace YouTubeDownLoader
                     VideoImage.Source = new BitmapImage(originalUri);
                     TitleLabel.Content = result.Title;
                     AuthorLabel.Content = info.Author;
-                    ViewLabel.Content = info.ViewCount;
+                    ViewLabel.Content = info.ViewCount.Value.ToString("##,###");
+                    LengthLabel.Content = info.Length.HasValue ? info.Length.Value.ToString("g"): "0:0:0";
                     VideoTypeCombobox.ItemsSource = media.Where(q => q.Channels == MediaChannels.Video && q.Format.Extension == "mp4")
                         .Distinct(new GrabbedMediaEqualityComparer())
                         .OrderBy(q => q, new GrabbedMediaComparer())
@@ -174,7 +175,7 @@ namespace YouTubeDownLoader
                     if (File.Exists(videoLocalFilePath))
                         File.Delete(videoLocalFilePath);
                     _progessTypeMessage = "Downloading Video: ";
-                    await StartDownload(videoModel.GrabbedMedia.ResourceUri.AbsoluteUri, videoLocalFilePath, _cancellationTokenSource.Token);
+                    await StartDownload(videoModel.GrabbedMedia.ResourceUri, videoLocalFilePath, _cancellationTokenSource.Token);
                     finalFilePath = Path.Combine(finalPath, videoModel.ValidFileName);
                 }
 
@@ -185,7 +186,7 @@ namespace YouTubeDownLoader
                         File.Delete(audioLocalFilePath);
                     _progessTypeMessage = "Downloading Audio: ";
 
-                    await StartDownload(audioModel.GrabbedMedia.ResourceUri.AbsoluteUri, audioLocalFilePath, _cancellationTokenSource.Token);
+                    await StartDownload(audioModel.GrabbedMedia.ResourceUri, audioLocalFilePath, _cancellationTokenSource.Token);
                     if (string.IsNullOrEmpty(finalFilePath))
                     {
                         finalFilePath = Path.Combine(finalPath, audioModel.ValidFileName);
@@ -295,6 +296,7 @@ namespace YouTubeDownLoader
                 ProgressBar.Value = progress;
             });
         }
+
         private void ProgressCallback(long bytesReceived, long totalBytesToReceive)
         {
             Application.Current.Dispatcher.Invoke(() =>
@@ -307,13 +309,13 @@ namespace YouTubeDownLoader
             });
         }
 
-        private async Task StartDownload(string url, string localPath, CancellationToken cancellationToken)
+        private async Task StartDownload(Uri url, string localPath, CancellationToken cancellationToken)
         {
             await using var fileStream = File.Create(localPath);
-            await DownloadFileAsync(new Uri(url), fileStream, cancellationToken, ProgressCallback);
+            await DownloadFileAsync(url, fileStream, cancellationToken, ProgressCallback);
         }
    
-        public async Task DownloadFileAsync(Uri uri, Stream toStream, CancellationToken cancellationToken = default, Action<long, long> progressCallback = null)
+        private async Task DownloadFileAsync(Uri uri, Stream toStream, CancellationToken cancellationToken = default, Action<long, long> progressCallback = null)
         {
             if (uri == null)
                 throw new ArgumentNullException(nameof(uri));
@@ -344,6 +346,14 @@ namespace YouTubeDownLoader
             }
 
         }
+
+        private async Task<long> GetFileSizeAsync(Uri uri)
+        {
+            using HttpClient client = new HttpClient();
+            using HttpResponseMessage response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+            return response.Content.Headers.ContentLength ?? -1;
+        }
+
 
         private string SizeSuffix(double value, int decimalPlaces = 1)
         {
@@ -387,10 +397,43 @@ namespace YouTubeDownLoader
             ProgressTextBlock.Text = $"";
             ProgressBar.Value = 0;
         }
-        
+
         #endregion
 
         #region UI Event Methords
+        private async void VideoTypeComboboxOnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            await UpdateDownloadSize();
+        }
+
+        private async void AudioTypeComboboxOnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            await UpdateDownloadSize();
+        }
+
+        private async Task UpdateDownloadSize()
+        {
+            var size = 0d;
+            var videoModel = (GrabbedMediaVideoModel) VideoTypeCombobox.SelectedItem;
+            var audioModel = (GrabbedMediaVideoModel) AudioTypeCombobox.SelectedItem;
+            if (VideoCheckBox.IsChecked.HasValue && VideoCheckBox.IsChecked.Value)
+            {
+                if (videoModel != null)
+                {
+                    size += await GetFileSizeAsync(videoModel.GrabbedMedia.ResourceUri);
+                }
+            }
+
+            if (AudioCheckBox.IsChecked.HasValue && AudioCheckBox.IsChecked.Value)
+            {
+                if (audioModel != null)
+                {
+                    size += await GetFileSizeAsync(audioModel.GrabbedMedia.ResourceUri);
+                }
+            }
+
+            DownloadButton.Content = $"{SizeSuffix(size)}";
+        }
 
         private void SettingButtonOnClick(object sender, RoutedEventArgs e)
         {
@@ -421,7 +464,7 @@ namespace YouTubeDownLoader
             }
         }
 
-        private void VideoCheckBoxOnClick(object sender, RoutedEventArgs e)
+        private async void VideoCheckBoxOnClick(object sender, RoutedEventArgs e)
         {
             VideoTypeCombobox.IsEnabled = VideoCheckBox.IsChecked.HasValue && VideoCheckBox.IsChecked.Value;
             if (!VideoTypeCombobox.IsEnabled)
@@ -429,9 +472,10 @@ namespace YouTubeDownLoader
                 AudioTypeCombobox.IsEnabled = true;
                 AudioCheckBox.IsChecked = true;
             }
+            await UpdateDownloadSize();
         }
 
-        private void AudioCheckBoxOnClick(object sender, RoutedEventArgs e)
+        private async void AudioCheckBoxOnClick(object sender, RoutedEventArgs e)
         {
             AudioTypeCombobox.IsEnabled = AudioCheckBox.IsChecked.HasValue && AudioCheckBox.IsChecked.Value;
             if (!AudioTypeCombobox.IsEnabled)
@@ -439,6 +483,7 @@ namespace YouTubeDownLoader
                 VideoTypeCombobox.IsEnabled = true;
                 VideoCheckBox.IsChecked = true;
             }
+            await UpdateDownloadSize();
         }
 
         private async void DownloadButtonOnClick(object sender, RoutedEventArgs e)
@@ -452,6 +497,7 @@ namespace YouTubeDownLoader
         }
         
         #endregion
+
 
     }
 }

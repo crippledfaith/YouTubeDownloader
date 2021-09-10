@@ -93,7 +93,6 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <Label Content="Title: " />
                     <Label
@@ -108,14 +107,17 @@
                         x:Name="AuthorLabel"
                         Grid.Row="1"
                         Grid.Column="1" />
-                    <Label
+                    <StackPanel
                         Grid.Row="2"
                         Grid.Column="0"
-                        Content="View: " />
-                    <Label
-                        x:Name="ViewLabel"
-                        Grid.Row="2"
-                        Grid.Column="1" />
+                        Grid.ColumnSpan="2"
+                        Orientation="Horizontal">
+                        <Label Content="View: " />
+                        <Label x:Name="ViewLabel" Width="100" />
+                        <Label Content="Length: " />
+                        <Label x:Name="LengthLabel" Width="100" />
+
+                    </StackPanel>
                 </Grid>
             </Grid>
             <Separator Grid.Row="3" />
@@ -148,7 +150,8 @@
                         x:Name="VideoTypeCombobox"
                         Grid.Row="0"
                         Grid.Column="1"
-                        DisplayMemberPath="FormatTitle" />
+                        DisplayMemberPath="FormatTitle"
+                        SelectionChanged="VideoTypeComboboxOnSelectionChanged" />
                     <CheckBox
                         x:Name="AudioCheckBox"
                         Grid.Row="0"
@@ -161,22 +164,41 @@
                         x:Name="AudioTypeCombobox"
                         Grid.Row="0"
                         Grid.Column="3"
-                        DisplayMemberPath="FormatTitle" />
+                        DisplayMemberPath="FormatTitle"
+                        SelectionChanged="AudioTypeComboboxOnSelectionChanged" />
 
                 </Grid>
                 <Button
                     x:Name="DownloadButton"
                     Grid.Row="0"
                     Grid.Column="1"
+                    Width="85"
                     Margin="5,0,5,0"
                     Click="DownloadButtonOnClick"
-                    Content="Download"
-                    IsEnabled="False" />
+                    Content="0 bytes"
+                    IsEnabled="False">
+                    <Button.ContentTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconModern
+                                    Width="15"
+                                    Height="15"
+                                    VerticalAlignment="Center"
+                                    Foreground="Green"
+                                    Kind="Download" />
+                                <TextBlock
+                                    Margin="4,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Text="{Binding}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </Button.ContentTemplate>
+                </Button>
                 <Button
                     x:Name="CancelButton"
                     Grid.Row="0"
                     Grid.Column="2"
-                    Margin="5,0,5,0"
+                    Margin="0,0,5,0"
                     Click="CancelButtonOnClick"
                     Content="Cancel"
                     IsEnabled="False" />
