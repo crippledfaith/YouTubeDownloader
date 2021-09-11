@@ -51,8 +51,15 @@ namespace YouTubeDownLoader
                 Properties.Settings.Default.FinalPath = path;
                 Properties.Settings.Default.Save();
             }
+            var applicationName = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name;
+            var applicationDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                applicationName);
+            if (!Directory.Exists(applicationDataPath))
+            {
+                Directory.CreateDirectory(applicationDataPath);
+            }
 
-            var currentDirectory = Directory.GetCurrentDirectory();
+            var currentDirectory = applicationDataPath;
             var ffmpegFile = Path.Combine(currentDirectory, "ffmpeg.exe");
             var ffprobeFile = Path.Combine(currentDirectory, "ffprobe.exe");
             if (!File.Exists(ffmpegFile))
@@ -103,8 +110,7 @@ namespace YouTubeDownLoader
         {
             if (string.IsNullOrEmpty(LinkTextBox.Text))
             {
-                MessageBox.Show(this, "Invalid Youtube Link.", "Youtube DownLoader", MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                ShowMessage("Invalid Youtube Link.", MessageBoxButton.OK);
                 return;
             }
 
@@ -147,8 +153,7 @@ namespace YouTubeDownLoader
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, "Invalid Youtube Link.", "Youtube DownLoader", MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                ShowMessage("Invalid Youtube Link.", MessageBoxButton.OK);
             }
             IsEnableDownloadButton(true);
             EnableControls(true);
@@ -159,45 +164,74 @@ namespace YouTubeDownLoader
             EnableControls(false);
             IsEnableDownloadButton(false);
             _cancellationTokenSource = new CancellationTokenSource();
+
             var videoLocalFilePath = "";
             var audioLocalFilePath = "";
             var finalFilePath = "";
             try
             {
+                
+       
 
                 var tempFolder = Properties.Settings.Default.DownloadPath;
                 var finalPath = Properties.Settings.Default.FinalPath;
                 var videoModel = (GrabbedMediaVideoModel)VideoTypeCombobox.SelectedItem;
                 var audioModel = (GrabbedMediaVideoModel)AudioTypeCombobox.SelectedItem;
-                if (VideoCheckBox.IsChecked.HasValue && VideoCheckBox.IsChecked.Value)
+
+                var isVideoCheckBoxChecked = VideoCheckBox.IsChecked.HasValue && VideoCheckBox.IsChecked.Value;
+                var isAudioCheckBoxChecked = AudioCheckBox.IsChecked.HasValue && AudioCheckBox.IsChecked.Value;
+
+
+                if (isVideoCheckBoxChecked)
                 {
+                    finalFilePath = Path.Combine(finalPath, videoModel.ValidFileName);
+                    if (File.Exists(finalFilePath))
+                    {
+                        var dialogResult = ShowMessage($"You have downloaded this media and the file exist {finalFilePath}?\nAre you sure you want to download this file?", MessageBoxButton.YesNo);
+                        if (dialogResult == false)
+                        {
+                            _cancellationTokenSource.Cancel();
+                            throw new Exception();
+                        }
+                    }
+
                     videoLocalFilePath = Path.Combine(tempFolder, videoModel.RandomFileName);
                     if (File.Exists(videoLocalFilePath))
                         File.Delete(videoLocalFilePath);
                     _progessTypeMessage = "Downloading Video: ";
                     await StartDownload(videoModel.GrabbedMedia.ResourceUri, videoLocalFilePath, _cancellationTokenSource.Token);
-                    finalFilePath = Path.Combine(finalPath, videoModel.ValidFileName);
+
                 }
 
-                if (AudioCheckBox.IsChecked.HasValue && AudioCheckBox.IsChecked.Value)
+                if (isAudioCheckBoxChecked)
                 {
+                    if (string.IsNullOrEmpty(finalFilePath))
+                    {
+                        finalFilePath = Path.Combine(finalPath, audioModel.ValidFileName);
+                        if (File.Exists(finalFilePath))
+                        {
+                            var dialogResult = ShowMessage($"You have downloaded this media and the file exist {finalFilePath}?\n Are you sure you want to download this file?");
+                            if (dialogResult == false)
+                            {
+                                _cancellationTokenSource.Cancel();
+                                throw new Exception();
+                            }
+                        }
+                    }
+
                     audioLocalFilePath = Path.Combine(tempFolder, audioModel.RandomFileName);
                     if (File.Exists(audioLocalFilePath))
                         File.Delete(audioLocalFilePath);
                     _progessTypeMessage = "Downloading Audio: ";
 
                     await StartDownload(audioModel.GrabbedMedia.ResourceUri, audioLocalFilePath, _cancellationTokenSource.Token);
-                    if (string.IsNullOrEmpty(finalFilePath))
-                    {
-                        finalFilePath = Path.Combine(finalPath, audioModel.ValidFileName);
-                    }
+          
                 }
 
 
                 if (File.Exists(finalFilePath))
                     File.Delete(finalFilePath);
-                if (VideoCheckBox.IsChecked.HasValue && VideoCheckBox.IsChecked.Value &&
-                    AudioCheckBox.IsChecked.HasValue && AudioCheckBox.IsChecked.Value)
+                if (isVideoCheckBoxChecked && isAudioCheckBoxChecked)
                 {
                     var mediaAnalysis = await FFProbe.AnalyseAsync(videoLocalFilePath);
 
@@ -223,15 +257,14 @@ namespace YouTubeDownLoader
                             videoLocalFilePath,
                         finalFilePath);
                 }
+                ShowMessage($"Download Completed.\nFile:{ finalFilePath}", MessageBoxButton.OK);
 
-                MessageBox.Show(this, $"Download Completed.\nFile:{finalFilePath}", "Youtube DownLoader", MessageBoxButton.OK,
-                    MessageBoxImage.Information);
             }
             catch (Exception exception)
             {
                 if (!_cancellationTokenSource.IsCancellationRequested)
                 {
-                    MessageBox.Show(this, exception.Message, "Youtube DownLoader", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ShowMessage(exception.Message, MessageBoxButton.OK);
                 }
             }
             finally
@@ -245,6 +278,16 @@ namespace YouTubeDownLoader
             ResetProgress();
             EnableControls(true);
             IsEnableDownloadButton(true);
+        }
+
+        private bool? ShowMessage(string message, MessageBoxButton messageBoxButton = MessageBoxButton.OKCancel)
+        {
+            var messageBoxWindow = new MessageBoxWindow(messageBoxButton);
+            messageBoxWindow.Owner = this;
+            messageBoxWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            messageBoxWindow.MessageLabel.Text = message;
+            messageBoxWindow.ShowDialog();
+            return messageBoxWindow.DialogResult;
         }
 
         #endregion

@@ -205,19 +205,21 @@
                 <Separator
                     Grid.Row="1"
                     Grid.Column="0"
-                    Grid.ColumnSpan="5" />
+                    Grid.ColumnSpan="3" />
                 <ProgressBar
                     x:Name="ProgressBar"
                     Grid.Row="2"
                     Grid.Column="0"
-                    Grid.ColumnSpan="5" />
+                    Grid.ColumnSpan="3" />
                 <TextBlock
                     x:Name="ProgressTextBlock"
                     Grid.Row="2"
                     Grid.Column="0"
-                    Grid.ColumnSpan="5"
+                    Grid.ColumnSpan="3"
                     HorizontalAlignment="Center"
-                    VerticalAlignment="Center" />
+                    VerticalAlignment="Center"
+                    FontWeight="Bold"
+                    Foreground="Black" />
             </Grid>
         </Grid>
     </Grid>
