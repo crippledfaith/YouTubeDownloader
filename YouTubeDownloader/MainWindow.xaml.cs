@@ -158,7 +158,7 @@ namespace YouTubeDownLoader
                     _progessTypeMessage = "Downloading Audio: ";
                     await DownloadManager.StartDownload(audioModel, audioLocalFilePath, _cancellationTokenSource.Token, ProgressCallback);
                 }
-          
+
 
                 if (File.Exists(finalFilePath))
                     File.Delete(finalFilePath);
@@ -220,7 +220,7 @@ namespace YouTubeDownLoader
             {
                 var dialogResult =
                     ShowMessage(
-                        $"You have downloaded this media and the file exist {finalFilePath}?\n Are you sure you want to download this file?",MessageBoxButton.YesNo);
+                        $"You have downloaded this media and the file already exist.\n{finalFilePath}?\n Are you sure you want to download this file?", MessageBoxButton.YesNo);
                 if (dialogResult == false)
                 {
                     _cancellationTokenSource.Cancel();
