@@ -10,11 +10,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using DotNetTools.SharpGrabber;
-using DotNetTools.SharpGrabber.Grabbed;
 using FFMpegCore;
 using FFMpegCore.Enums;
 using WK.Libraries.SharpClipboardNS;
+using YoutubeExplode;
 
 namespace YouTubeDownLoader
 {
@@ -58,30 +57,19 @@ namespace YouTubeDownLoader
             IsEnableDownloadButton(false, false);
             try
             {
-                var grabber = GrabberBuilder.New()
-                    .UseDefaultServices()
-                    .AddYouTube()
-                    .Build();
-                var result = await grabber.GrabAsync(new Uri(LinkTextBox.Text));
-                if (result != null)
+                var youtubeClient = new YoutubeClient();
+                var video = await youtubeClient.Videos.GetAsync(LinkTextBox.Text);
+                if (video != null)
                 {
-                    var info = result.Resource<GrabbedInfo>();
-                    var images = result.Resources<GrabbedImage>();
-                    var media = result.Resources<GrabbedMedia>();
-                    var originalUri = images.FirstOrDefault()?.ResourceUri;
-                    VideoImage.Source = new BitmapImage(originalUri);
-                    TitleLabel.Content = result.Title;
-                    AuthorLabel.Content = info.Author;
-                    ViewLabel.Content = info.ViewCount.Value.ToString("##,###");
-                    LengthLabel.Content = info.Length.HasValue ? info.Length.Value.ToString("g") : "0:0:0";
-                    VideoTypeCombobox.ItemsSource = media.Where(q => q.Channels == MediaChannels.Video && q.Format.Extension == "mp4")//
-                        .Distinct(new GrabbedMediaEqualityComparer())
-                        .OrderBy(q => q, new GrabbedMediaComparer())
-                        .Select(q => new GrabbedMediaModel(q, result)).ToList();
-                    AudioTypeCombobox.ItemsSource = media.Where(q => q.Channels == MediaChannels.Audio)
-                        .Distinct(new GrabbedMediaEqualityComparer())
-                        .OrderBy(q => q, new GrabbedMediaComparer())
-                        .Select(q => new GrabbedMediaModel(q, result)).ToList();
+                    var originalUri = video.Thumbnails[0].Url;
+                    VideoImage.Source = new BitmapImage(new Uri(originalUri));
+                    TitleLabel.Content = video.Title;
+                    AuthorLabel.Content = video.Author.Title;
+                    ViewLabel.Content = video.Engagement.ViewCount.ToString("##,###");
+                    LengthLabel.Content = video.Duration.HasValue ? video.Duration.Value.ToString("g") : "0:0:0";
+                    var streamManifest = await youtubeClient.Videos.Streams.GetManifestAsync(LinkTextBox.Text);
+                    VideoTypeCombobox.ItemsSource = streamManifest.GetVideoOnlyStreams().OrderByDescending(q => q.VideoQuality).Select(q => new MediaModel(youtubeClient, video, streamManifest, q)).ToList();
+                    AudioTypeCombobox.ItemsSource = streamManifest.GetAudioOnlyStreams().OrderByDescending(q => q.Bitrate).Select(q => new MediaModel(youtubeClient, video, streamManifest, q)).ToList();
                     VideoTypeCombobox.SelectedIndex = 0;
                     AudioTypeCombobox.SelectedIndex = 0;
                     DownloadButton.IsEnabled = true;
@@ -112,8 +100,8 @@ namespace YouTubeDownLoader
             {
                 var tempFolder = Properties.Settings.Default.DownloadPath;
                 var finalPath = Properties.Settings.Default.FinalPath;
-                var videoModel = (GrabbedMediaModel)VideoTypeCombobox.SelectedItem;
-                var audioModel = (GrabbedMediaModel)AudioTypeCombobox.SelectedItem;
+                var videoModel = (MediaModel)VideoTypeCombobox.SelectedItem;
+                var audioModel = (MediaModel)AudioTypeCombobox.SelectedItem;
 
                 var isVideoCheckBoxChecked = VideoCheckBox.IsChecked.HasValue && VideoCheckBox.IsChecked.Value;
                 var isAudioCheckBoxChecked = AudioCheckBox.IsChecked.HasValue && AudioCheckBox.IsChecked.Value;
@@ -289,16 +277,18 @@ namespace YouTubeDownLoader
             });
         }
 
-        private void ProgressCallback(long bytesReceived, long totalBytesToReceive)
+        private void ProgressCallback(double progress, long totalBytesToReceived)
         {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                double bytesIn = bytesReceived;
-                double totalBytes = totalBytesToReceive;
-                double percentage = bytesIn / totalBytes * 100;
-                ProgressTextBlock.Text = $"{_progessTypeMessage} {percentage:F1}% - ({Helper.SizeSuffix(bytesIn)}/{Helper.SizeSuffix(totalBytes)})";
-                ProgressBar.Value = int.Parse(Math.Truncate(percentage).ToString());
-            });
+            Application.Current.Dispatcher.Invoke(() => { UpdateProgress(progress, totalBytesToReceived); });
+        }
+
+        private void UpdateProgress(double progress, long totalBytesToReceived)
+        {
+            double bytesIn = totalBytesToReceived * progress;
+            double totalBytes = totalBytesToReceived;
+            var progressMessage = $"{_progessTypeMessage} {progress * 100:F1}% - ({Helper.SizeSuffix(bytesIn)}/{Helper.SizeSuffix(totalBytes)})";
+            ProgressTextBlock.Text = progressMessage;
+            ProgressBar.Value = progress*100;
         }
 
         private void ResetProgress()
@@ -310,25 +300,25 @@ namespace YouTubeDownLoader
         #endregion
 
         #region UI Event Methords
-        private async void VideoTypeComboboxOnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void VideoTypeComboboxOnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            await UpdateSettingGrid();
+            UpdateSettingGrid();
         }
 
-        private async void AudioTypeComboboxOnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void AudioTypeComboboxOnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            await UpdateSettingGrid();
+            UpdateSettingGrid();
         }
 
-        private async Task UpdateSettingGrid()
+        private void UpdateSettingGrid()
         {
             var isVideoChecked = VideoCheckBox.IsChecked.HasValue && VideoCheckBox.IsChecked.Value;
             var isAudioChecked = AudioCheckBox.IsChecked.HasValue && AudioCheckBox.IsChecked.Value;
-            var grabbedVideoMediaModel = (GrabbedMediaModel)VideoTypeCombobox.SelectedItem;
-            var grabbedAudioMediaModel = (GrabbedMediaModel)AudioTypeCombobox.SelectedItem;
+            var videoModel = (MediaModel)VideoTypeCombobox.SelectedItem;
+            var audioModel = (MediaModel)AudioTypeCombobox.SelectedItem;
 
-            var size = await DownloadManager.GetDownloadSize(isVideoChecked, isAudioChecked, grabbedVideoMediaModel,
-                grabbedAudioMediaModel);
+            var size = DownloadManager.GetDownloadSize(isVideoChecked, isAudioChecked, videoModel,
+                audioModel);
             if (Math.Abs(size) < .1)
             {
                 IsEnableDownloadButton(false, false);
@@ -383,7 +373,7 @@ namespace YouTubeDownLoader
                 AudioCheckBox.IsChecked = true;
             }
 
-            await UpdateSettingGrid();
+            UpdateSettingGrid();
 
         }
 
@@ -397,7 +387,7 @@ namespace YouTubeDownLoader
                 VideoTypeCombobox.IsEnabled = true;
                 VideoCheckBox.IsChecked = true;
             }
-            await UpdateSettingGrid();
+            UpdateSettingGrid();
         }
 
         private async void DownloadButtonOnClick(object sender, RoutedEventArgs e)
