@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using DotNetTools.SharpGrabber.Grabbed;
 
@@ -11,18 +12,28 @@ namespace YouTubeDownLoader
         {
             if (x.Channels == MediaChannels.Video && y.Channels == MediaChannels.Video)
             {
-                return GetNumber(x.FormatTitle) < GetNumber(y.FormatTitle) ? 1 : -1;
+                var resolutionSame = x.Resolution == y.Resolution;
+                if (resolutionSame)
+                {
+                    var containerBigger = String.Compare(x.Container, y.Container, comparisonType: StringComparison.OrdinalIgnoreCase);
+                    return containerBigger;
+                }
+                else
+                {
+                    var resolutionBigger = GetNumberByNumbers(x.Resolution) < GetNumberByNumbers(y.Resolution);
+                    return resolutionBigger ? 1 : -1;
+                }
             }
-            else if (x.Channels == MediaChannels.Audio && y.Channels == MediaChannels.Audio)
+
+            if (x.Channels == MediaChannels.Audio && y.Channels == MediaChannels.Audio)
             {
-                return GetNumber(x.BitRateString) < GetNumber(y.BitRateString) ? 1 : -1;
+                return GetNumberByNumbers(x.BitRateString) < GetNumberByNumbers(y.BitRateString) ? 1 : -1;
             }
 
             return 0;
         }
 
-
-        public int GetNumber(string text)
+        public int GetNumberByNumbers(string text)
         {
             return int.Parse(string.Join("", new Regex("[0-9]").Matches(text)));
         }

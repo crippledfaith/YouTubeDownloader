@@ -7,11 +7,11 @@ using DotNetTools.SharpGrabber.Grabbed;
 
 namespace YouTubeDownLoader
 {
-    public class GrabbedMediaVideoModel
+    public class GrabbedMediaModel
     {
         readonly List<char> _invalidFileNameChars = Path.GetInvalidFileNameChars().ToList();
 
-        public GrabbedMediaVideoModel(GrabbedMedia media, GrabResult result)
+        public GrabbedMediaModel(GrabbedMedia media, GrabResult result)
         {
             GrabbedMedia = media;
             GrabResult = result;

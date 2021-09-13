@@ -6,7 +6,7 @@
     xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
     xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="Youtube DownLoader"
+    Title="YOUTUBE DOWNLOADER"
     Width="500"
     Height="198"
     Icon="/icon.ico"
@@ -99,14 +99,15 @@
                         x:Name="TitleLabel"
                         Grid.Row="0"
                         Grid.Column="1" />
-                    <Label
+
+                    <StackPanel
                         Grid.Row="1"
                         Grid.Column="0"
-                        Content="Author: " />
-                    <Label
-                        x:Name="AuthorLabel"
-                        Grid.Row="1"
-                        Grid.Column="1" />
+                        Grid.ColumnSpan="2"
+                        Orientation="Horizontal">
+                        <Label Content="Author: " />
+                        <Label x:Name="AuthorLabel" />
+                    </StackPanel>
                     <StackPanel
                         Grid.Row="2"
                         Grid.Column="0"
@@ -132,7 +133,7 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <Grid x:Name="SettingsGrid">
+                <Grid x:Name="SettingsGrid" Grid.Row="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
@@ -168,58 +169,70 @@
                         SelectionChanged="AudioTypeComboboxOnSelectionChanged" />
 
                 </Grid>
-                <Button
-                    x:Name="DownloadButton"
+                <Grid
+                    x:Name="ControlGrid"
                     Grid.Row="0"
-                    Grid.Column="1"
-                    Width="85"
-                    Margin="5,0,5,0"
-                    Click="DownloadButtonOnClick"
-                    Content="0 bytes"
-                    IsEnabled="False">
-                    <Button.ContentTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <iconPacks:PackIconModern
-                                    Width="15"
-                                    Height="15"
-                                    VerticalAlignment="Center"
-                                    Foreground="Green"
-                                    Kind="Download" />
-                                <TextBlock
-                                    Margin="4,0,0,0"
-                                    VerticalAlignment="Center"
-                                    Text="{Binding}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </Button.ContentTemplate>
-                </Button>
-                <Button
-                    x:Name="CancelButton"
-                    Grid.Row="0"
-                    Grid.Column="2"
-                    Margin="0,0,5,0"
-                    Click="CancelButtonOnClick"
-                    Content="Cancel"
-                    IsEnabled="False" />
+                    Column="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Button
+                        x:Name="DownloadButton"
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Width="85"
+                        Margin="5,0,5,0"
+                        Click="DownloadButtonOnClick"
+                        Content="0 bytes"
+                        IsEnabled="False">
+                        <Button.ContentTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconModern
+                                        Width="15"
+                                        Height="15"
+                                        VerticalAlignment="Center"
+                                        Foreground="Green"
+                                        Kind="Download" />
+                                    <TextBlock
+                                        Margin="4,0,0,0"
+                                        VerticalAlignment="Center"
+                                        Text="{Binding}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </Button.ContentTemplate>
+                    </Button>
+                    <Button
+                        x:Name="CancelButton"
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        Margin="0,0,5,0"
+                        Click="CancelButtonOnClick"
+                        Content="Cancel"
+                        IsEnabled="False" />
+                </Grid>
                 <Separator
                     Grid.Row="1"
                     Grid.Column="0"
                     Grid.ColumnSpan="3" />
-                <ProgressBar
-                    x:Name="ProgressBar"
+                <Grid
+                    x:Name="ProgressGrid"
                     Grid.Row="2"
                     Grid.Column="0"
-                    Grid.ColumnSpan="3" />
-                <TextBlock
-                    x:Name="ProgressTextBlock"
-                    Grid.Row="2"
-                    Grid.Column="0"
-                    Grid.ColumnSpan="3"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    FontWeight="Bold"
-                    Foreground="Black" />
+                    Grid.ColumnSpan="3">
+                    <ProgressBar x:Name="ProgressBar" Grid.Column="0" />
+                    <TextBlock
+                        x:Name="ProgressTextBlock"
+                        Grid.Column="0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontWeight="Bold"
+                        Foreground="Black" />
+                </Grid>
             </Grid>
         </Grid>
     </Grid>
