@@ -52,7 +52,7 @@
                                                 <Image
                                                     Grid.Column="0"
                                                     Width="130"
-                                                    Height="100"
+                                                    Height="90"
                                                     HorizontalAlignment="Left"
                                                     Source="{Binding Image}" />
                                             </Grid>
