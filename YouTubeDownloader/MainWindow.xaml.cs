@@ -1,9 +1,8 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -14,6 +13,7 @@ using FFMpegCore;
 using FFMpegCore.Enums;
 using WK.Libraries.SharpClipboardNS;
 using YoutubeExplode;
+using Container = YoutubeExplode.Videos.Streams.Container;
 
 namespace YouTubeDownLoader
 {
@@ -25,8 +25,10 @@ namespace YouTubeDownLoader
         private bool _monitorClipboard = true;
         private string _progessTypeMessage = "";
         private CancellationTokenSource _cancellationTokenSource;
-
+        private string _currentLink = "";
         public DownloadManager DownloadManager = new DownloadManager();
+        private readonly System.Windows.Forms.Timer keypressTimer;
+        private SearchWindow _searchWindow;
         #endregion
 
         #region Constructor
@@ -34,9 +36,20 @@ namespace YouTubeDownLoader
         public MainWindow()
         {
             InitializeComponent();
+            keypressTimer = new System.Windows.Forms.Timer();
+            keypressTimer.Tick += KeypressTimerTick;
+            keypressTimer.Interval = 4000;
+            keypressTimer.Stop();
             IsEnableDownloadButton(false, false);
             _clipboard.ClipboardChanged += ClipboardChanged;
             Helper.UpdateFolderAndFfmpegConfig();
+
+        }
+
+        private async void KeypressTimerTick(object sender, EventArgs e)
+        {
+
+            await ValidUrl(LinkTextBox.Text);
         }
 
 
@@ -45,9 +58,9 @@ namespace YouTubeDownLoader
 
         #region Main Methords
 
-        private async Task ExtractFileData()
+        private async Task ExtractFileData(string videoLink, bool ignoreMessage = true)
         {
-            if (string.IsNullOrEmpty(LinkTextBox.Text))
+            if (ignoreMessage && string.IsNullOrEmpty(videoLink))
             {
                 ShowMessage("Invalid Youtube Link.", MessageBoxButton.OK);
                 return;
@@ -58,7 +71,7 @@ namespace YouTubeDownLoader
             try
             {
                 var youtubeClient = new YoutubeClient();
-                var video = await youtubeClient.Videos.GetAsync(LinkTextBox.Text);
+                var video = await youtubeClient.Videos.GetAsync(videoLink);
                 if (video != null)
                 {
                     var originalUri = video.Thumbnails[0].Url;
@@ -67,8 +80,8 @@ namespace YouTubeDownLoader
                     AuthorLabel.Content = video.Author.Title;
                     ViewLabel.Content = video.Engagement.ViewCount.ToString("##,###");
                     LengthLabel.Content = video.Duration.HasValue ? video.Duration.Value.ToString("g") : "0:0:0";
-                    var streamManifest = await youtubeClient.Videos.Streams.GetManifestAsync(LinkTextBox.Text);
-                    VideoTypeCombobox.ItemsSource = streamManifest.GetVideoOnlyStreams().OrderByDescending(q => q.VideoQuality).Select(q => new MediaModel(youtubeClient, video, streamManifest, q)).ToList();
+                    var streamManifest = await youtubeClient.Videos.Streams.GetManifestAsync(videoLink);
+                    VideoTypeCombobox.ItemsSource = streamManifest.GetVideoOnlyStreams().OrderByDescending(q => q.VideoQuality).Select(q => new MediaModel(youtubeClient, video, streamManifest, q)).ToList().FindAll(q => q.StreamInfo.Container != Container.WebM);
                     AudioTypeCombobox.ItemsSource = streamManifest.GetAudioOnlyStreams().OrderByDescending(q => q.Bitrate).Select(q => new MediaModel(youtubeClient, video, streamManifest, q)).ToList();
                     VideoTypeCombobox.SelectedIndex = 0;
                     AudioTypeCombobox.SelectedIndex = 0;
@@ -81,7 +94,10 @@ namespace YouTubeDownLoader
             }
             catch (Exception ex)
             {
-                ShowMessage("Invalid Youtube Link.", MessageBoxButton.OK);
+                if (ignoreMessage)
+                {
+                    ShowMessage(ex.Message, MessageBoxButton.OK);
+                }
             }
             IsEnableDownloadButton(true);
             EnableControls(true);
@@ -231,17 +247,26 @@ namespace YouTubeDownLoader
 
         #region Helper Methords
 
-        private void ClipboardChanged(object sender, SharpClipboard.ClipboardChangedEventArgs e)
+        private async void ClipboardChanged(object sender, SharpClipboard.ClipboardChangedEventArgs e)
         {
             if (!_monitorClipboard)
                 return;
             if (e.ContentType == SharpClipboard.ContentTypes.Text)
             {
-                var clipboardText = _clipboard.ClipboardText.ToLower();
-                if (clipboardText.Contains("https://www.youtube.com/") || clipboardText.Contains("https://youtu.be"))
-                {
-                    LinkTextBox.Text = _clipboard.ClipboardText;
-                }
+                var clipboardText = _clipboard.ClipboardText;
+                await ValidUrl(clipboardText, ignoreMessage: false);
+            }
+        }
+
+        private async Task ValidUrl(string linkUrL, bool ignoreMessage = false)
+        {
+            keypressTimer.Stop();
+            if ((linkUrL != _currentLink) && (linkUrL.Contains("https://www.youtube.com/watch") || linkUrL.Contains("https://youtu.be")))
+            {
+                _currentLink = linkUrL;
+                LinkTextBox.Text = linkUrL;
+
+                await ExtractFileData(linkUrL, ignoreMessage);
             }
         }
 
@@ -288,7 +313,7 @@ namespace YouTubeDownLoader
             double totalBytes = totalBytesToReceived;
             var progressMessage = $"{_progessTypeMessage} {progress * 100:F1}% - ({Helper.SizeSuffix(bytesIn)}/{Helper.SizeSuffix(totalBytes)})";
             ProgressTextBlock.Text = progressMessage;
-            ProgressBar.Value = progress*100;
+            ProgressBar.Value = progress * 100;
         }
 
         private void ResetProgress()
@@ -345,24 +370,23 @@ namespace YouTubeDownLoader
 
         private async void AddButtonClick(object sender, RoutedEventArgs e)
         {
-            await ExtractFileData();
+            await ExtractFileData(LinkTextBox.Text);
         }
 
         private async void LinkTextBoxOnKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
-                await ExtractFileData();
+                await ValidUrl(LinkTextBox.Text);
         }
 
-        private async void LinkTextBoxOnTextChanged(object sender, TextChangedEventArgs e)
+        private void LinkTextBoxOnTextChanged(object sender, TextChangedEventArgs e)
         {
-            if (AutoStartCheckBox.IsChecked.HasValue && AutoStartCheckBox.IsChecked.Value)
-            {
-                await ExtractFileData();
-            }
+            keypressTimer.Stop();
+            keypressTimer.Start();
+
         }
 
-        private async void VideoCheckBoxOnClick(object sender, RoutedEventArgs e)
+        private void VideoCheckBoxOnClick(object sender, RoutedEventArgs e)
         {
             var isVideoCheckBoxChecked = VideoCheckBox.IsChecked.HasValue && VideoCheckBox.IsChecked.Value;
             VideoTypeCombobox.IsEnabled = isVideoCheckBoxChecked;
@@ -377,7 +401,7 @@ namespace YouTubeDownLoader
 
         }
 
-        private async void AudioCheckBoxOnClick(object sender, RoutedEventArgs e)
+        private void AudioCheckBoxOnClick(object sender, RoutedEventArgs e)
         {
             var isAudioCheckBoxChecked = AudioCheckBox.IsChecked.HasValue && AudioCheckBox.IsChecked.Value;
 
@@ -400,7 +424,29 @@ namespace YouTubeDownLoader
             _cancellationTokenSource.Cancel();
         }
 
+        private void SearchButtonOnClick(object sender, RoutedEventArgs e)
+        {
+            if (_searchWindow == null)
+            {
+
+                _searchWindow = new SearchWindow();
+                _searchWindow.Closing += _searchWindowClosing;
+            }
+
+            _searchWindow.Show();
+        }
+
+        private void _searchWindowClosing(object sender, CancelEventArgs e)
+        {
+            _searchWindow = null;
+        }
+
+        private void MainWindowOnClosing(object sender, CancelEventArgs e)
+        {
+            _searchWindow?.Close();
+        }
         #endregion
+
 
 
     }
