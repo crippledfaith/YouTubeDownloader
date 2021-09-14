@@ -11,8 +11,6 @@ namespace YouTubeDownLoader
 {
     public class SearchModel : INotifyPropertyChanged
     {
-        readonly Timer _timer = new Timer(500);
-        private readonly YoutubeClient _client;
         private readonly VideoSearchResult _video;
         private string _title;
         private BitmapImage _image;
@@ -74,9 +72,6 @@ namespace YouTubeDownLoader
             Image = new BitmapImage(new Uri(video.Thumbnails[0].Url));
             
         }
-
-
-
 
 
         public event PropertyChangedEventHandler PropertyChanged;

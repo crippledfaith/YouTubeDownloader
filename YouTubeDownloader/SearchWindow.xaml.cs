@@ -50,7 +50,7 @@ namespace YouTubeDownLoader
                 }
 
             }
-            catch (Exception e)
+            catch (Exception)
             {
 
             }
