@@ -434,6 +434,7 @@ namespace YouTubeDownLoader
             }
 
             _searchWindow.Show();
+            _searchWindow.Activate();
         }
 
         private void _searchWindowClosing(object sender, CancelEventArgs e)

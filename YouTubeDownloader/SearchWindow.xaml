@@ -34,12 +34,11 @@
             </Button>
         </Grid>
         <Grid Grid.Row="1">
-            <DataGrid x:Name="DataGrid" AutoGenerateColumns="False">
+            <DataGrid x:Name="DataGrid" AutoGenerateColumns="False" MouseDoubleClick="DataGridMouseDoubleClick">
                 <DataGrid.Columns>
                     <DataGridTextColumn
                         Width="125"
-                        Binding="{Binding Image}"
-                        Header="Level"
+                        Header=""
                         IsReadOnly="True">
                         <DataGridTextColumn.CellStyle>
                             <Style TargetType="DataGridCell">
@@ -47,14 +46,10 @@
                                     <Setter.Value>
                                         <ControlTemplate TargetType="DataGridCell">
                                             <Grid Background="{TemplateBinding Background}">
-                                                <ContentPresenter
-                                                    Margin="20,0,0,0"
-                                                    HorizontalAlignment="Left"
-                                                    VerticalAlignment="Center" />
                                                 <Image
                                                     Grid.Column="0"
-                                                    Width="80"
-                                                    Height="80"
+                                                    Width="130"
+                                                    Height="100"
                                                     HorizontalAlignment="Left"
                                                     Source="{Binding Image}" />
                                             </Grid>
@@ -66,14 +61,39 @@
                     </DataGridTextColumn>
                     <DataGridTextColumn
                         Width="300"
-                        Binding="{Binding Title}"
-                        Header="Title"
-                        IsReadOnly="True" />
-                    <DataGridTextColumn
-                        Width="250"
-                        Binding="{Binding Url}"
-                        Header="Url"
-                        IsReadOnly="True" />
+                        Header="Details"
+                        IsReadOnly="True" >
+                        <DataGridTextColumn.CellStyle>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="DataGridCell">
+                                            <Grid Margin="5">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="70"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="*" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="*" />
+                                                </Grid.RowDefinitions>
+                                      
+                                                <Label Content="{Binding Title}" Grid.ColumnSpan="4"/>
+                                                <Label Grid.Row="1" Content="Author"/>
+                                                <Label Grid.Row="1" Grid.Column="1" Content="{Binding Author}"/>
+                                                <Label Grid.Row="2" Content="Duration"/>
+                                                <Label Grid.Row="2"  Grid.Column="1" Content="{Binding Duration}"/>
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </DataGridTextColumn.CellStyle>
+                    </DataGridTextColumn>
+            
 
                     <!--<DataGridTemplateColumn Width="*" Header="Url">
                         <DataGridTemplateColumn.CellTemplate>
