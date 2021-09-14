@@ -72,7 +72,7 @@ namespace YouTubeDownLoader
             Author = video.Author.Title;
             Duration = video.Duration.ToString();
             Image = new BitmapImage(new Uri(video.Thumbnails[0].Url));
-
+            
         }
 
 

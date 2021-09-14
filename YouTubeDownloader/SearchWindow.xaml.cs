@@ -31,11 +31,6 @@ namespace YouTubeDownLoader
             DataGrid.ItemsSource = observableCollection;
         }
 
-        private void SearchTextBoxOnSelectionChanged(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private async void SearchButton_OnClick(object sender, RoutedEventArgs e)
         {
             await Search(SearchTextBox.Text);
@@ -59,14 +54,22 @@ namespace YouTubeDownLoader
             {
 
             }
-
         }
 
         private void DataGridMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var item = (SearchModel)DataGrid.SelectedItem;
-            Clipboard.SetText(item.Url);
-
+            try
+            {
+                var item = (SearchModel)DataGrid.SelectedItem;
+                if (item != null)
+                {
+                    Clipboard.SetText(item.Url);
+                }
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
         }
     }
 }

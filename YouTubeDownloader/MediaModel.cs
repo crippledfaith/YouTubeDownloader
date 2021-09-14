@@ -43,7 +43,7 @@ namespace YouTubeDownLoader
 
         public string FormatTitle => StreamInfo is VideoOnlyStreamInfo
             ? $"{((VideoOnlyStreamInfo)StreamInfo).VideoQuality.Label}({((VideoOnlyStreamInfo)StreamInfo).VideoCodec})-{((VideoOnlyStreamInfo)StreamInfo).Container.Name}"
-            : $"{((AudioOnlyStreamInfo)StreamInfo).Bitrate.KiloBitsPerSecond:## 'mbps'} ({((AudioOnlyStreamInfo)StreamInfo).AudioCodec})-{((AudioOnlyStreamInfo)StreamInfo).Container.Name}";
+            : $"{((AudioOnlyStreamInfo)StreamInfo).Bitrate.KiloBitsPerSecond:## 'kbps'}({((AudioOnlyStreamInfo)StreamInfo).AudioCodec})-{((AudioOnlyStreamInfo)StreamInfo).Container.Name}";
 
     }
 }
