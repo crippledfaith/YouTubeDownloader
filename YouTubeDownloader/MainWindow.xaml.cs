@@ -80,6 +80,7 @@ namespace YouTubeDownLoader
                     AuthorLabel.Content = video.Author.Title;
                     ViewLabel.Content = video.Engagement.ViewCount.ToString("##,###");
                     LengthLabel.Content = video.Duration.HasValue ? video.Duration.Value.ToString("g") : "0:0:0";
+                    RatingLabel.Content = $"({video.Engagement.LikeCount:##,###}) likes ({video.Engagement.DislikeCount:##,###}) Dislikes";
                     var streamManifest = await youtubeClient.Videos.Streams.GetManifestAsync(videoLink);
                     VideoTypeCombobox.ItemsSource = streamManifest.GetVideoOnlyStreams().OrderByDescending(q => q.VideoQuality).Select(q => new MediaModel(youtubeClient, video, streamManifest, q)).ToList().FindAll(q => q.StreamInfo.Container != Container.WebM);
                     AudioTypeCombobox.ItemsSource = streamManifest.GetAudioOnlyStreams().OrderByDescending(q => q.Bitrate).Select(q => new MediaModel(youtubeClient, video, streamManifest, q)).ToList();

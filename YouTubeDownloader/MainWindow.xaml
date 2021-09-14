@@ -123,7 +123,10 @@
                         Grid.ColumnSpan="2"
                         Orientation="Horizontal">
                         <Label Content="Author: " />
-                        <Label x:Name="AuthorLabel" />
+                        <Label x:Name="AuthorLabel" Width="87"  />
+                        <Label Content="Rating: " />
+                        <Label x:Name="RatingLabel"  />
+
                     </StackPanel>
                     <StackPanel
                         Grid.Row="2"

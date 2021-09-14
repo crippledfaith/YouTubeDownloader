@@ -71,5 +71,11 @@ namespace YouTubeDownLoader
                 // ignored
             }
         }
+
+        private async void SearchTextBoxKeyDown(object sender, KeyEventArgs e)
+        {
+            if(e.Key== Key.Enter)
+                await Search(SearchTextBox.Text);
+        }
     }
 }

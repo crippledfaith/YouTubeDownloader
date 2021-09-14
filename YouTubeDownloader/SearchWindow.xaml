@@ -6,7 +6,7 @@
     xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
     xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="Search"
+    Title="SEARCH"
     Width="800"
     Height="450"
     Icon="icon.ico"
@@ -21,7 +21,7 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <TextBox x:Name="SearchTextBox" />
+            <TextBox x:Name="SearchTextBox" KeyDown="SearchTextBoxKeyDown" />
             <Button
                 x:Name="SearchButton"
                 Grid.Row="0"
