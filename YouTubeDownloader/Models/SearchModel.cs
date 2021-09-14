@@ -3,11 +3,9 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Media.Imaging;
 using YouTubeDownLoader.Annotations;
-using YoutubeExplode;
 using YoutubeExplode.Search;
-using Timer = System.Timers.Timer;
 
-namespace YouTubeDownLoader
+namespace YouTubeDownLoader.Models
 {
     public class SearchModel : INotifyPropertyChanged
     {

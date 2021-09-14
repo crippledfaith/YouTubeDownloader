@@ -7,8 +7,9 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using YouTubeDownLoader.Models;
 
-namespace YouTubeDownLoader
+namespace YouTubeDownLoader.Services
 {
     public class DownloadManager
     {

@@ -1,0 +1,16 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "3c6d4184-1182-4067-bd43-0f57e1b6ce72": {
+      "ProjectGuid": "3c6d4184-1182-4067-bd43-0f57e1b6ce72",
+      "DisplayName": "YouTubeDownLoader",
+      "ColorIndex": 0
+    },
+    "69b8d2a0-d226-4170-8938-a0bdfdb72bd3": {
+      "ProjectGuid": "69b8d2a0-d226-4170-8938-a0bdfdb72bd3",
+      "DisplayName": "YoutubeExplode",
+      "ColorIndex": 1
+    }
+  },
+  "NextColorIndex": 2
+}

@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FFMpegCore;
 
-namespace YouTubeDownLoader
+namespace YouTubeDownLoader.Services
 {
     public static class Helper
     {

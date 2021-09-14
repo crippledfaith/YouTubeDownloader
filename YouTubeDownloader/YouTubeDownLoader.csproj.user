@@ -9,21 +9,21 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="MessageBoxWindow.xaml.cs">
+    <Compile Update="Windows\MessageBoxWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="SettingWindow.xaml.cs">
+    <Compile Update="Windows\SettingWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="MainWindow.xaml">
+    <Page Update="Windows\MainWindow.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="MessageBoxWindow.xaml">
+    <Page Update="Windows\MessageBoxWindow.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="SettingWindow.xaml">
+    <Page Update="Windows\SettingWindow.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>

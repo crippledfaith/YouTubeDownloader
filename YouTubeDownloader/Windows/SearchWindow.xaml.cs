@@ -13,10 +13,11 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using AngleSharp.Html.Dom;
+using YouTubeDownLoader.Models;
 using YoutubeExplode;
 using YoutubeExplode.Common;
 
-namespace YouTubeDownLoader
+namespace YouTubeDownLoader.Windows
 {
     /// <summary>
     /// Interaction logic for SearchWindow.xaml

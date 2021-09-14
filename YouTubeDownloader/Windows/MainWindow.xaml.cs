@@ -12,10 +12,12 @@ using System.Windows.Media.Imaging;
 using FFMpegCore;
 using FFMpegCore.Enums;
 using WK.Libraries.SharpClipboardNS;
+using YouTubeDownLoader.Models;
+using YouTubeDownLoader.Services;
 using YoutubeExplode;
 using Container = YoutubeExplode.Videos.Streams.Container;
 
-namespace YouTubeDownLoader
+namespace YouTubeDownLoader.Windows
 {
     public partial class MainWindow
     {

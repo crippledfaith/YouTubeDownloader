@@ -7,7 +7,7 @@ using YoutubeExplode.Videos;
 using YoutubeExplode.Videos.Streams;
 
 
-namespace YouTubeDownLoader
+namespace YouTubeDownLoader.Models
 {
     public class MediaModel
     {
