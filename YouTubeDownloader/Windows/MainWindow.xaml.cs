@@ -64,7 +64,7 @@ namespace YouTubeDownLoader.Windows
         {
             if (ignoreMessage && string.IsNullOrEmpty(videoLink))
             {
-                ShowMessage("Invalid Youtube Link.", MessageBoxButton.OK);
+                ShowMessage("Please provide a link.", MessageBoxButton.OK);
                 return;
             }
 
@@ -193,7 +193,7 @@ namespace YouTubeDownLoader.Windows
                             videoLocalFilePath,
                         finalFilePath);
                 }
-                var result = ShowMessage($"Download Completed.\nFile:{ finalFilePath}\nWould like to Open the containing folder?", MessageBoxButton.YesNo);
+                var result = ShowMessage($"Download Completed.\nFile:{ finalFilePath}\n\nWould like to open the containing folder?", MessageBoxButton.YesNo);
                 if (result.HasValue && result.Value)
                 {
                     string argument = "/select, \"" + finalFilePath + "\"";
@@ -358,8 +358,6 @@ namespace YouTubeDownLoader.Windows
 
             DownloadButton.Content = $"{Helper.SizeSuffix(size)}";
         }
-
-
 
         private void SettingButtonOnClick(object sender, RoutedEventArgs e)
         {

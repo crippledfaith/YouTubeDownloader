@@ -2,3 +2,6 @@
 /YouTubeDownloader/obj/
 /YouTubeDownloader/ffmpeg.exe
 /YouTubeDownloader/ffprobe.exe
+.vs/
+.vs/YouTubeDownloader/v17/.futdcache.v1
+.vs/YouTubeDownloader/v17/.suo
