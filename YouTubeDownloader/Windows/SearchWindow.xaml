@@ -9,7 +9,7 @@
     Title="SEARCH"
     Width="800"
     Height="450"
-    Icon="icon.ico"
+    Icon="../icon.ico"
     mc:Ignorable="d">
     <Grid>
         <Grid.RowDefinitions>

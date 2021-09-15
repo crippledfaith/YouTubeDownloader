@@ -35,7 +35,7 @@
             <Button
                 x:Name="SearchButton"
                 Click="SearchButtonOnClick"
-                ToolTip="Settings">
+                ToolTip="Search">
                 <Button.ContentTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
@@ -207,6 +207,7 @@
                         Width="85"
                         Margin="5,0,5,0"
                         Click="DownloadButtonOnClick"
+                        ToolTip="Download"
                         Content="0 bytes"
                         IsEnabled="False">
                         <Button.ContentTemplate>
@@ -228,6 +229,7 @@
                     </Button>
                     <Button
                         x:Name="CancelButton"
+                        ToolTip="Cancel"
                         Grid.Row="0"
                         Grid.Column="2"
                         Margin="0,0,5,0"

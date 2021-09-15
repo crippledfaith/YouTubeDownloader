@@ -32,7 +32,16 @@ namespace YouTubeDownLoader.Models
         {
             get
             {
-                var formattableString = $"{ Video.Title}-{ FormatTitle }.{ StreamInfo.Container.Name}";
+                var fommat = "";
+                if (IsVideo)
+                {
+                    fommat = $"{((VideoOnlyStreamInfo)StreamInfo).VideoQuality.Label}({((VideoOnlyStreamInfo)StreamInfo).VideoCodec})";
+                }
+                else
+                {
+                    fommat = $"{((AudioOnlyStreamInfo)StreamInfo).Bitrate.KiloBitsPerSecond:## 'kbps'}({((AudioOnlyStreamInfo)StreamInfo).AudioCodec})";
+                }
+                var formattableString = $"{ Video.Title}-{fommat}.{ StreamInfo.Container.Name}";
 
                 var validFilename = new string(formattableString
                     .Where(ch => !_invalidFileNameChars.Contains(ch)).ToArray());
@@ -40,8 +49,9 @@ namespace YouTubeDownLoader.Models
                 return validFilename;
             }
         }
+        public bool IsVideo => StreamInfo is VideoOnlyStreamInfo;
 
-        public string FormatTitle => StreamInfo is VideoOnlyStreamInfo
+        public string FormatTitle => IsVideo
             ? $"{((VideoOnlyStreamInfo)StreamInfo).VideoQuality.Label}({((VideoOnlyStreamInfo)StreamInfo).VideoCodec})-{((VideoOnlyStreamInfo)StreamInfo).Container.Name}"
             : $"{((AudioOnlyStreamInfo)StreamInfo).Bitrate.KiloBitsPerSecond:## 'kbps'}({((AudioOnlyStreamInfo)StreamInfo).AudioCodec})-{((AudioOnlyStreamInfo)StreamInfo).Container.Name}";
 

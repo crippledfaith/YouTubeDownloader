@@ -424,7 +424,9 @@ namespace YouTubeDownLoader.Windows
 
         private void CancelButtonOnClick(object sender, RoutedEventArgs e)
         {
-            _cancellationTokenSource.Cancel();
+            var responce = ShowMessage("Are you sure you want to cancel?", MessageBoxButton.YesNo);
+            if (responce == true)
+                _cancellationTokenSource.Cancel();
         }
 
         private void SearchButtonOnClick(object sender, RoutedEventArgs e)
@@ -433,14 +435,14 @@ namespace YouTubeDownLoader.Windows
             {
 
                 _searchWindow = new SearchWindow();
-                _searchWindow.Closing += _searchWindowClosing;
+                _searchWindow.Closing += SearchWindowClosing;
             }
 
             _searchWindow.Show();
             _searchWindow.Activate();
         }
 
-        private void _searchWindowClosing(object sender, CancelEventArgs e)
+        private void SearchWindowClosing(object sender, CancelEventArgs e)
         {
             _searchWindow = null;
         }
