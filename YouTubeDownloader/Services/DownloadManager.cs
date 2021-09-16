@@ -18,23 +18,29 @@ namespace YouTubeDownLoader.Services
             await DownloadFileAsync(info, localPath, cancellationToken, progressCallback);
         }
 
-        public double GetDownloadSize(bool isVideo, bool isAudio, MediaModel videoModel, MediaModel audioModel)
+        public double GetDownloadSize(bool isVideoAudio, bool isVideo, bool isAudio, MediaModel videoModel, MediaModel audioModel, MediaModel videoAudioModel)
         {
             var size = 0d;
-
-            if (isVideo)
+            if (isVideoAudio)
             {
-                if (videoModel != null)
-                {
-                    size += videoModel.StreamInfo.Size.Bytes;
-                }
+                size = videoAudioModel != null ? videoAudioModel.StreamInfo.Size.Bytes : 0;
             }
-
-            if (isAudio)
+            else
             {
-                if (audioModel != null)
+                if (isVideo)
                 {
-                    size += audioModel.StreamInfo.Size.Bytes;
+                    if (videoModel != null)
+                    {
+                        size += videoModel != null ? videoModel.StreamInfo.Size.Bytes : 0;
+                    }
+                }
+
+                if (isAudio)
+                {
+                    if (audioModel != null)
+                    {
+                        size += audioModel != null ? audioModel.StreamInfo.Size.Bytes : 0;
+                    }
                 }
             }
 

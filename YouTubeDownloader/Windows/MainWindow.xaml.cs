@@ -85,8 +85,10 @@ namespace YouTubeDownLoader.Windows
                     var streamManifest = await youtubeClient.Videos.Streams.GetManifestAsync(videoLink);
                     VideoTypeCombobox.ItemsSource = streamManifest.GetVideoOnlyStreams().OrderByDescending(q => q.VideoQuality).Select(q => new MediaModel(youtubeClient, video, streamManifest, q)).ToList().FindAll(q => q.StreamInfo.Container != Container.WebM);
                     AudioTypeCombobox.ItemsSource = streamManifest.GetAudioOnlyStreams().OrderByDescending(q => q.Bitrate).Select(q => new MediaModel(youtubeClient, video, streamManifest, q)).ToList();
+                    VideoAudioTypeCombobox.ItemsSource = streamManifest.GetMuxedStreams().OrderByDescending(q => q.VideoQuality).ThenBy(q => q.Bitrate).Select(q => new MediaModel(youtubeClient, video, streamManifest, q)).ToList();
                     VideoTypeCombobox.SelectedIndex = 0;
                     AudioTypeCombobox.SelectedIndex = 0;
+                    VideoAudioTypeCombobox.SelectedIndex = 0;
                     DownloadButton.IsEnabled = true;
                     if (AutoStartCheckBox.IsChecked.HasValue && AutoStartCheckBox.IsChecked.Value)
                     {
@@ -122,17 +124,28 @@ namespace YouTubeDownLoader.Windows
                 var videoModel = (MediaModel)VideoTypeCombobox.SelectedItem;
                 var audioModel = (MediaModel)AudioTypeCombobox.SelectedItem;
 
-                var isVideoCheckBoxChecked = VideoCheckBox.IsChecked.HasValue && VideoCheckBox.IsChecked.Value;
-                var isAudioCheckBoxChecked = AudioCheckBox.IsChecked.HasValue && AudioCheckBox.IsChecked.Value;
 
+                var isVideo = VideoCheckBox.IsChecked.HasValue && VideoCheckBox.IsChecked.Value;
+                var isAudio = AudioCheckBox.IsChecked.HasValue && AudioCheckBox.IsChecked.Value;
+                var isVideoAudio = !(ShowMoreToggleButton.IsChecked.HasValue && ShowMoreToggleButton.IsChecked.Value);
 
-                if (isVideoCheckBoxChecked)
+                if (isVideoAudio)
                 {
-                    if (!isAudioCheckBoxChecked)
+                    videoModel = (MediaModel)VideoAudioTypeCombobox.SelectedItem;
+                    isAudio = false;
+                }
+
+                if (isVideo)
+                {
+                    if (!isAudio)
                     {
                         var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(videoModel.ValidFileName);
                         var fileNameExtension = Path.GetExtension(videoModel.ValidFileName);
                         var newFileName = $"{fileNameWithoutExtension}-(video only){fileNameExtension}";
+                        if (isVideoAudio)
+                        {
+                            newFileName = $"{fileNameWithoutExtension}{fileNameExtension}";
+                        }
                         finalFilePath = Path.Combine(finalPath, newFileName);
                         FileLocationConfirm(finalFilePath);
                     }
@@ -148,9 +161,9 @@ namespace YouTubeDownLoader.Windows
                     await DownloadManager.StartDownload(videoModel, videoLocalFilePath, _cancellationTokenSource.Token, ProgressCallback);
                 }
 
-                if (isAudioCheckBoxChecked)
+                if (isAudio)
                 {
-                    if (!isVideoCheckBoxChecked)
+                    if (!isVideo)
                     {
                         var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(audioModel.ValidFileName);
                         var fileNameExtension = Path.GetExtension(audioModel.ValidFileName);
@@ -169,7 +182,7 @@ namespace YouTubeDownLoader.Windows
 
                 if (File.Exists(finalFilePath))
                     File.Delete(finalFilePath);
-                if (isVideoCheckBoxChecked && isAudioCheckBoxChecked)
+                if (isVideo && isAudio)
                 {
                     var mediaAnalysis = await FFProbe.AnalyseAsync(videoLocalFilePath);
                     var duration = mediaAnalysis.Duration;
@@ -278,6 +291,9 @@ namespace YouTubeDownLoader.Windows
             AddVideoPanel.IsEnabled = enable;
             SettingButton.IsEnabled = enable;
             SettingsGrid.IsEnabled = enable;
+            SimpleSettingGrid.IsEnabled = enable;
+            ShowMoreToggleButton.IsEnabled = enable;
+
 
             _monitorClipboard = enable;
         }
@@ -340,13 +356,15 @@ namespace YouTubeDownLoader.Windows
 
         private void UpdateSettingGrid()
         {
+            var isVideoAudioChecked = !(ShowMoreToggleButton.IsChecked.HasValue && ShowMoreToggleButton.IsChecked.Value);
+
             var isVideoChecked = VideoCheckBox.IsChecked.HasValue && VideoCheckBox.IsChecked.Value;
             var isAudioChecked = AudioCheckBox.IsChecked.HasValue && AudioCheckBox.IsChecked.Value;
             var videoModel = (MediaModel)VideoTypeCombobox.SelectedItem;
             var audioModel = (MediaModel)AudioTypeCombobox.SelectedItem;
+            var vedioAudioModel = (MediaModel)VideoAudioTypeCombobox.SelectedItem;
 
-            var size = DownloadManager.GetDownloadSize(isVideoChecked, isAudioChecked, videoModel,
-                audioModel);
+            var size = DownloadManager.GetDownloadSize(isVideoAudioChecked, isVideoChecked, isAudioChecked, videoModel, audioModel, vedioAudioModel);
             if (Math.Abs(size) < .1)
             {
                 IsEnableDownloadButton(false, false);
@@ -414,7 +432,20 @@ namespace YouTubeDownLoader.Windows
             }
             UpdateSettingGrid();
         }
-
+        private void ShowMoreToggleButtonClick(object sender, RoutedEventArgs e)
+        {
+            if (ShowMoreToggleButton.IsChecked == true)
+            {
+                SimpleSettingGrid.Visibility = Visibility.Collapsed;
+                SettingsGrid.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                SimpleSettingGrid.Visibility = Visibility.Visible;
+                SettingsGrid.Visibility = Visibility.Collapsed;
+            }
+            UpdateSettingGrid();
+        }
         private async void DownloadButtonOnClick(object sender, RoutedEventArgs e)
         {
             await StartDownloadingProcess();
@@ -449,8 +480,9 @@ namespace YouTubeDownLoader.Windows
         {
             _searchWindow?.Close();
         }
-        #endregion
 
+
+        #endregion
 
 
     }

@@ -7,8 +7,8 @@
     xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="YOUTUBE DOWNLOADER"
-    Width="505"
-    Height="198"
+    Width="525"
+    Height="225"
     Closing="MainWindowOnClosing"
     Icon="/icon.ico"
     ResizeMode="CanMinimize"
@@ -52,7 +52,7 @@
     </mah:MetroWindow.RightWindowCommands>
 
     <Grid>
-        <Grid Grid.Column="0">
+        <Grid Grid.Column="0" >
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -60,7 +60,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <StackPanel
+            <StackPanel Margin="0,5,0,0"
                 x:Name="AddVideoPanel"
                 Grid.Row="0"
                 Orientation="Horizontal">
@@ -71,8 +71,7 @@
                     Content="Link:" />
                 <TextBox
                     x:Name="LinkTextBox"
-                    Width="344"
-                    Height="27.3"
+                    Width="364"
                     KeyDown="LinkTextBoxOnKeyDown"
                     TextChanged="LinkTextBoxOnTextChanged" />
                 <Button x:Name="AddButton" Click="AddButtonClick">
@@ -87,7 +86,7 @@
                     Margin="5,0,5,0"
                     Content="Auto Start" />
             </StackPanel>
-            <Separator Grid.Row="1" />
+            <Separator Grid.Row="1" Margin="5"/>
             <Grid x:Name="VideoInfoGrid" Grid.Row="2">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -114,6 +113,8 @@
                     <Label Content="Title: " />
                     <Label
                         x:Name="TitleLabel"
+                        FontWeight="Bold"
+                        FontSize="12"
                         Grid.Row="0"
                         Grid.Column="1" />
 
@@ -141,19 +142,27 @@
                     </StackPanel>
                 </Grid>
             </Grid>
-            <Separator Grid.Row="3" />
+            <Separator Grid.Row="3" Margin="5" />
             <Grid x:Name="DownloadGrid" Grid.Row="4">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="5" />
+                    <RowDefinition Height="10" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <Grid x:Name="SettingsGrid" Grid.Row="0">
+                <ToggleButton  Margin="5,0,0,0" x:Name="ShowMoreToggleButton" Click="ShowMoreToggleButtonClick" ToolTip="More Video and Audio Options">
+                    <iconPacks:PackIconFontAwesome 
+                                        Width="15"
+                                        Height="15"
+                                        VerticalAlignment="Center"
+                                        Kind="EllipsisVSolid" />
+                </ToggleButton>
+                <Grid x:Name="SettingsGrid" Grid.Row="0" Grid.Column="1" Margin="5,0,0,0" Visibility="Collapsed">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
@@ -189,10 +198,26 @@
                         SelectionChanged="AudioTypeComboboxOnSelectionChanged" />
 
                 </Grid>
+                <Grid x:Name="SimpleSettingGrid" Grid.Row="0" Grid.Column="1" Visibility="Visible"  Margin="5,0,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Label
+                        Margin="5,0,10,0"
+                        Content="Video And Audio:" />
+                    <ComboBox
+                        x:Name="VideoAudioTypeCombobox"
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        DisplayMemberPath="FormatTitle"
+                        SelectionChanged="VideoTypeComboboxOnSelectionChanged" />
+                </Grid>
                 <Grid
                     x:Name="ControlGrid"
                     Grid.Row="0"
-                    Column="1">
+                    Column="2">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
@@ -237,12 +262,12 @@
                         Content="Cancel"
                         IsEnabled="False" />
                 </Grid>
-                <Separator
+                <Separator Margin="5,0,5,0"
                     Grid.Row="1"
                     Grid.Column="0"
                     Grid.ColumnSpan="3" />
                 <Grid
-                    x:Name="ProgressGrid"
+                    x:Name="ProgressGrid" Margin="5,0,5,5"
                     Grid.Row="2"
                     Grid.Column="0"
                     Grid.ColumnSpan="3">

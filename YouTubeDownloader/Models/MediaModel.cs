@@ -14,7 +14,7 @@ namespace YouTubeDownLoader.Models
         public static YoutubeClient YoutubeClient { get; set; }
         readonly List<char> _invalidFileNameChars = Path.GetInvalidFileNameChars().ToList();
 
-        public MediaModel(YoutubeClient youtubeClient , Video video,StreamManifest media,IStreamInfo streamInfo)
+        public MediaModel(YoutubeClient youtubeClient, Video video, StreamManifest media, IStreamInfo streamInfo)
         {
             YoutubeClient = youtubeClient;
             Video = video;
@@ -33,7 +33,11 @@ namespace YouTubeDownLoader.Models
             get
             {
                 var fommat = "";
-                if (IsVideo)
+                if (IsVideoAudio)
+                {
+                    fommat = $"{((MuxedStreamInfo)StreamInfo).VideoQuality.Label}({((MuxedStreamInfo)StreamInfo).VideoCodec})-{((MuxedStreamInfo)StreamInfo).Bitrate.KiloBitsPerSecond:## 'kbps'}({((MuxedStreamInfo)StreamInfo).AudioCodec})";
+                }
+                else if (IsVideo)
                 {
                     fommat = $"{((VideoOnlyStreamInfo)StreamInfo).VideoQuality.Label}({((VideoOnlyStreamInfo)StreamInfo).VideoCodec})";
                 }
@@ -41,7 +45,7 @@ namespace YouTubeDownLoader.Models
                 {
                     fommat = $"{((AudioOnlyStreamInfo)StreamInfo).Bitrate.KiloBitsPerSecond:## 'kbps'}({((AudioOnlyStreamInfo)StreamInfo).AudioCodec})";
                 }
-                var formattableString = $"{ Video.Title}-{fommat}.{ StreamInfo.Container.Name}";
+                var formattableString = $"{ Video.Title}-{fommat}.{ StreamInfo.Container.Name }";
 
                 var validFilename = new string(formattableString
                     .Where(ch => !_invalidFileNameChars.Contains(ch)).ToArray());
@@ -49,11 +53,38 @@ namespace YouTubeDownLoader.Models
                 return validFilename;
             }
         }
-        public bool IsVideo => StreamInfo is VideoOnlyStreamInfo;
+        public bool IsVideo
+        {
+            get
+            {
+                if (IsVideoAudio)
+                {
+                    return false;
+                }
+                return StreamInfo is VideoOnlyStreamInfo;
+            }
+        }
 
-        public string FormatTitle => IsVideo
-            ? $"{((VideoOnlyStreamInfo)StreamInfo).VideoQuality.Label}({((VideoOnlyStreamInfo)StreamInfo).VideoCodec})-{((VideoOnlyStreamInfo)StreamInfo).Container.Name}"
-            : $"{((AudioOnlyStreamInfo)StreamInfo).Bitrate.KiloBitsPerSecond:## 'kbps'}({((AudioOnlyStreamInfo)StreamInfo).AudioCodec})-{((AudioOnlyStreamInfo)StreamInfo).Container.Name}";
+        public bool IsVideoAudio => StreamInfo is MuxedStreamInfo;
 
+        public string FormatTitle
+        {
+            get
+            {
+                if (IsVideoAudio)
+                {
+                    return $"{((MuxedStreamInfo)StreamInfo).VideoQuality.Label}({((MuxedStreamInfo)StreamInfo).VideoCodec}),{((MuxedStreamInfo)StreamInfo).Bitrate.KiloBitsPerSecond:## 'kbps'}({((MuxedStreamInfo)StreamInfo).AudioCodec})-{((MuxedStreamInfo)StreamInfo).Container.Name}";
+                }
+                else if (IsVideo)
+                {
+                    return $"{((VideoOnlyStreamInfo)StreamInfo).VideoQuality.Label}({((VideoOnlyStreamInfo)StreamInfo).VideoCodec})-{((VideoOnlyStreamInfo)StreamInfo).Container.Name}";
+                }
+                else
+                {
+                    return $"{((AudioOnlyStreamInfo)StreamInfo).Bitrate.KiloBitsPerSecond:## 'kbps'}({((AudioOnlyStreamInfo)StreamInfo).AudioCodec})-{((AudioOnlyStreamInfo)StreamInfo).Container.Name}";
+                }
+
+            }
+        }
     }
 }
