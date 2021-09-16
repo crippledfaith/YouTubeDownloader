@@ -55,18 +55,28 @@ namespace YouTubeDownLoader.Services
         {
             if (string.IsNullOrEmpty(Properties.Settings.Default.DownloadPath))
             {
-                Properties.Settings.Default.DownloadPath = Path.GetTempPath();
+                var path = Path.Combine(Path.GetTempPath(), "YoutubeDownloader");
+                Properties.Settings.Default.DownloadPath = path;
                 Properties.Settings.Default.Save();
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
             }
 
             if (string.IsNullOrEmpty(Properties.Settings.Default.FinalPath))
             {
                 string path = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
+                path = Path.Combine(path, "Youtube Downloads");
                 Properties.Settings.Default.FinalPath = path;
                 Properties.Settings.Default.Save();
+                if(!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
             }
 
-            var applicationName = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name;
+            var applicationName = Assembly.GetEntryAssembly()?.GetName().Name;
             var applicationDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 applicationName);
             if (!Directory.Exists(applicationDataPath))
