@@ -50,7 +50,6 @@ namespace YouTubeDownLoader.Windows
 
         private async void KeypressTimerTick(object sender, EventArgs e)
         {
-
             await ValidUrl(LinkTextBox.Text);
         }
 
@@ -67,7 +66,7 @@ namespace YouTubeDownLoader.Windows
                 ShowMessage("Please provide a link.", MessageBoxButton.OK);
                 return;
             }
-
+            ProgressBar.IsIndeterminate = true;
             EnableControls(false);
             IsEnableDownloadButton(false, false);
             try
@@ -104,6 +103,7 @@ namespace YouTubeDownLoader.Windows
             }
             IsEnableDownloadButton(true);
             EnableControls(true);
+            ProgressBar.IsIndeterminate = false;
         }
 
         private async Task StartDownloadingProcess()
