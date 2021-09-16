@@ -43,6 +43,7 @@ namespace YouTubeDownLoader.Windows
         private void TempPathButtonOnClick(object sender, RoutedEventArgs e)
         {
             var folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
+            folderBrowserDialog.SelectedPath = TempPathTextBox.Text;
             var dialogResult = folderBrowserDialog.ShowDialog();
             if (dialogResult == System.Windows.Forms.DialogResult.OK)
             {
@@ -53,6 +54,7 @@ namespace YouTubeDownLoader.Windows
         private void FinalPathButtonOnClick(object sender, RoutedEventArgs e)
         {
             var folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
+            folderBrowserDialog.SelectedPath = FinalPathTextBox.Text;
             var dialogResult = folderBrowserDialog.ShowDialog();
             if (dialogResult == System.Windows.Forms.DialogResult.OK)
             {
