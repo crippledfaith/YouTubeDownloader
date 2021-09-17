@@ -242,7 +242,7 @@ namespace YouTubeDownLoader.Windows
             {
                 var dialogResult =
                     ShowMessage(
-                        $"You have downloaded this media and the file already exist.\n{finalFilePath}?\n Are you sure you want to download this file?", MessageBoxButton.YesNo);
+                        $"You have downloaded this media and the file already exist.\n{finalFilePath}?\n\nAre you sure you want to download this file?", MessageBoxButton.YesNo);
                 if (dialogResult == false)
                 {
                     _cancellationTokenSource.Cancel();
