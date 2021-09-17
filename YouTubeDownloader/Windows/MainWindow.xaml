@@ -12,7 +12,7 @@
     Closing="MainWindowOnClosing"
     Icon="/icon.ico"
     ResizeMode="CanMinimize"
-    ShowMinButton="True"
+    ShowMinButton="True" Loaded="MetroWindowLoaded"
     mc:Ignorable="d">
     <mah:MetroWindow.RightWindowCommands>
         <mah:WindowCommands>
@@ -125,8 +125,8 @@
                         Orientation="Horizontal">
                         <Label Content="Author: " />
                         <Label x:Name="AuthorLabel" Width="87"  />
-                        <Label Content="Rating: " />
-                        <Label x:Name="RatingLabel"  />
+                        <Label Content="Length: " />
+                        <Label x:Name="LengthLabel" Width="100" />
 
                     </StackPanel>
                     <StackPanel
@@ -136,8 +136,9 @@
                         Orientation="Horizontal">
                         <Label Content="View: " />
                         <Label x:Name="ViewLabel" Width="100" />
-                        <Label Content="Length: " />
-                        <Label x:Name="LengthLabel" Width="100" />
+                        <Label Content="Rating: " />
+                        <Label x:Name="RatingLabel"  />
+
 
                     </StackPanel>
                 </Grid>

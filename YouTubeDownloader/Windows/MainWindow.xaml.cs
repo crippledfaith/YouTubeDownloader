@@ -30,6 +30,7 @@ namespace YouTubeDownLoader.Windows
         private string _currentLink = "";
         public DownloadManager DownloadManager = new DownloadManager();
         private readonly System.Windows.Forms.Timer keypressTimer;
+        private readonly System.Windows.Forms.Timer showSettingTimers;
         private SearchWindow _searchWindow;
         #endregion
 
@@ -40,20 +41,21 @@ namespace YouTubeDownLoader.Windows
             InitializeComponent();
             keypressTimer = new System.Windows.Forms.Timer();
             keypressTimer.Tick += KeypressTimerTick;
-            keypressTimer.Interval = 4000;
+            keypressTimer.Interval = 2000;
             keypressTimer.Stop();
+            showSettingTimers = new System.Windows.Forms.Timer();
+            showSettingTimers.Tick += ShowSettingTimersTick;
+            showSettingTimers.Interval = 1000;
             IsEnableDownloadButton(false, false);
             _clipboard.ClipboardChanged += ClipboardChanged;
+            ShowMoreToggleButton.IsChecked = Properties.Settings.Default.IsVideoAudio;
+            VideoCheckBox.IsChecked = Properties.Settings.Default.IsVideo;
+            AudioCheckBox.IsChecked = Properties.Settings.Default.IsAudio;
+            ShowMoreSettings();
+            AudioTypeToggle();
+            VideoTypeToggle();
             Helper.UpdateFolderAndFfmpegConfig();
-
         }
-
-        private async void KeypressTimerTick(object sender, EventArgs e)
-        {
-            await ValidUrl(LinkTextBox.Text);
-        }
-
-
 
         #endregion
 
@@ -79,9 +81,9 @@ namespace YouTubeDownLoader.Windows
                     VideoImage.Source = new BitmapImage(new Uri(originalUri));
                     TitleLabel.Content = video.Title;
                     AuthorLabel.Content = video.Author.Title;
-                    ViewLabel.Content = video.Engagement.ViewCount.ToString("##,###");
+                    ViewLabel.Content = video.Engagement.ViewCount.ToString("N0");
                     LengthLabel.Content = video.Duration.HasValue ? video.Duration.Value.ToString("g") : "0:0:0";
-                    RatingLabel.Content = $"({video.Engagement.LikeCount:##,###}) likes ({video.Engagement.DislikeCount:##,###}) Dislikes";
+                    RatingLabel.Content = $"{video.Engagement.LikeCount:N0} likes / {video.Engagement.DislikeCount:N0} dislikes";
                     var streamManifest = await youtubeClient.Videos.Streams.GetManifestAsync(videoLink);
                     VideoTypeCombobox.ItemsSource = streamManifest.GetVideoOnlyStreams().OrderByDescending(q => q.VideoQuality).Select(q => new MediaModel(youtubeClient, video, streamManifest, q)).ToList().FindAll(q => q.StreamInfo.Container != Container.WebM);
                     AudioTypeCombobox.ItemsSource = streamManifest.GetAudioOnlyStreams().OrderByDescending(q => q.Bitrate).Select(q => new MediaModel(youtubeClient, video, streamManifest, q)).ToList();
@@ -341,6 +343,71 @@ namespace YouTubeDownLoader.Windows
             ProgressBar.Value = 0;
         }
 
+        private void ShowSettings()
+        {
+            var settingWindow = new SettingWindow
+            {
+                Owner = this,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+            settingWindow.ShowDialog();
+        }
+
+        private void ShowMoreSettings()
+        {
+            if (ShowMoreToggleButton.IsChecked == true)
+            {
+                SimpleSettingGrid.Visibility = Visibility.Collapsed;
+                SettingsGrid.Visibility = Visibility.Visible;
+                Properties.Settings.Default.IsVideoAudio = true;
+            }
+            else
+            {
+                SimpleSettingGrid.Visibility = Visibility.Visible;
+                SettingsGrid.Visibility = Visibility.Collapsed;
+                Properties.Settings.Default.IsVideoAudio = false;
+            }
+            Properties.Settings.Default.Save();
+
+            UpdateSettingGrid();
+        }
+
+        private void VideoTypeToggle()
+        {
+            var isVideoCheckBoxChecked = VideoCheckBox.IsChecked.HasValue && VideoCheckBox.IsChecked.Value;
+            VideoTypeCombobox.IsEnabled = isVideoCheckBoxChecked;
+
+            if (!isVideoCheckBoxChecked)
+            {
+                AudioTypeCombobox.IsEnabled = true;
+                AudioCheckBox.IsChecked = true;
+                Properties.Settings.Default.IsAudio = true;
+            }
+
+            Properties.Settings.Default.IsVideo = isVideoCheckBoxChecked;
+            Properties.Settings.Default.Save();
+
+            UpdateSettingGrid();
+        }
+
+
+        private void AudioTypeToggle()
+        {
+            var isAudioCheckBoxChecked = AudioCheckBox.IsChecked.HasValue && AudioCheckBox.IsChecked.Value;
+
+            AudioTypeCombobox.IsEnabled = isAudioCheckBoxChecked;
+            if (!isAudioCheckBoxChecked)
+            {
+                VideoTypeCombobox.IsEnabled = true;
+                VideoCheckBox.IsChecked = true;
+                Properties.Settings.Default.IsVideo = true;
+            }
+            Properties.Settings.Default.IsAudio = isAudioCheckBoxChecked;
+            Properties.Settings.Default.Save();
+
+            UpdateSettingGrid();
+        }
+
         #endregion
 
         #region UI Event Methords
@@ -379,12 +446,7 @@ namespace YouTubeDownLoader.Windows
 
         private void SettingButtonOnClick(object sender, RoutedEventArgs e)
         {
-            var settingWindow = new SettingWindow
-            {
-                Owner = this,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
-            settingWindow.ShowDialog();
+            ShowSettings();
         }
 
         private async void AddButtonClick(object sender, RoutedEventArgs e)
@@ -405,46 +467,21 @@ namespace YouTubeDownLoader.Windows
 
         }
 
+      
+
         private void VideoCheckBoxOnClick(object sender, RoutedEventArgs e)
         {
-            var isVideoCheckBoxChecked = VideoCheckBox.IsChecked.HasValue && VideoCheckBox.IsChecked.Value;
-            VideoTypeCombobox.IsEnabled = isVideoCheckBoxChecked;
-
-            if (!isVideoCheckBoxChecked)
-            {
-                AudioTypeCombobox.IsEnabled = true;
-                AudioCheckBox.IsChecked = true;
-            }
-
-            UpdateSettingGrid();
-
+            VideoTypeToggle();
         }
 
         private void AudioCheckBoxOnClick(object sender, RoutedEventArgs e)
         {
-            var isAudioCheckBoxChecked = AudioCheckBox.IsChecked.HasValue && AudioCheckBox.IsChecked.Value;
-
-            AudioTypeCombobox.IsEnabled = isAudioCheckBoxChecked;
-            if (!isAudioCheckBoxChecked)
-            {
-                VideoTypeCombobox.IsEnabled = true;
-                VideoCheckBox.IsChecked = true;
-            }
-            UpdateSettingGrid();
+            AudioTypeToggle();
         }
+
         private void ShowMoreToggleButtonClick(object sender, RoutedEventArgs e)
         {
-            if (ShowMoreToggleButton.IsChecked == true)
-            {
-                SimpleSettingGrid.Visibility = Visibility.Collapsed;
-                SettingsGrid.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                SimpleSettingGrid.Visibility = Visibility.Visible;
-                SettingsGrid.Visibility = Visibility.Collapsed;
-            }
-            UpdateSettingGrid();
+            ShowMoreSettings();
         }
         private async void DownloadButtonOnClick(object sender, RoutedEventArgs e)
         {
@@ -481,9 +518,29 @@ namespace YouTubeDownLoader.Windows
             _searchWindow?.Close();
         }
 
+        private void MetroWindowLoaded(object sender, RoutedEventArgs e)
+        {
+            showSettingTimers.Start();
 
+        }
+
+
+        private void ShowSettingTimersTick(object sender, EventArgs e)
+        {
+            showSettingTimers.Stop();
+            if (Properties.Settings.Default.FistLoaded)
+            {
+                ShowSettings();
+                Properties.Settings.Default.FistLoaded = false;
+                Properties.Settings.Default.Save();
+            }
+        }
+
+        private async void KeypressTimerTick(object sender, EventArgs e)
+        {
+            await ValidUrl(LinkTextBox.Text);
+        }
         #endregion
-
 
     }
 
