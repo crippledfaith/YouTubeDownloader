@@ -208,12 +208,9 @@ namespace YouTubeDownLoader.Windows
                             videoLocalFilePath,
                         finalFilePath);
                 }
-                var result = ShowMessage($"Download Completed.\nFile:{ finalFilePath}\n\nWould like to open the containing folder?", MessageBoxButton.YesNo);
-                if (result.HasValue && result.Value)
-                {
-                    string argument = "/select, \"" + finalFilePath + "\"";
-                    Process.Start("explorer.exe", argument);
-                }
+                var sucessMessage = $"Download Completed.\nFile: { finalFilePath}";
+                ShowNotificaion(sucessMessage, finalFilePath);
+    
 
             }
             catch (Exception exception)
@@ -234,6 +231,12 @@ namespace YouTubeDownLoader.Windows
             ResetProgress();
             EnableControls(true);
             IsEnableDownloadButton(true);
+        }
+
+        private void ShowNotificaion(string sucessMessage, string finalFilePath)
+        {
+            var notificationWindow = new NotificationWindow(sucessMessage, finalFilePath);
+            notificationWindow.Show();
         }
 
         private void FileLocationConfirm(string finalFilePath)
