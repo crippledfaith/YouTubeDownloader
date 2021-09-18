@@ -13,7 +13,9 @@
     Icon="/icon.ico"
     WindowStartupLocation="Manual"
     ResizeMode="CanMinimize"
-    ShowMinButton="True" Loaded="MetroWindowLoaded"
+    ShowMinButton="True" 
+    Loaded="MetroWindowLoaded"
+    ShowSystemMenu="False"
     mc:Ignorable="d">
     <mah:MetroWindow.RightWindowCommands>
         <mah:WindowCommands>

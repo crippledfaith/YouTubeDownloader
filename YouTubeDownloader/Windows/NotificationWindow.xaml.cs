@@ -50,11 +50,7 @@ namespace YouTubeDownLoader.Windows
         {
             _timer.Stop();
             _timer.Dispose();
-            Closing -= WindowClosing;
-            e.Cancel = true;
-            var anim = new DoubleAnimation(0, (Duration)TimeSpan.FromSeconds(1));
-            anim.Completed += (s, _) => this.Close();
-            this.BeginAnimation(UIElement.OpacityProperty, anim);
+  
         }
 
         private void WindowLoaded(object sender, RoutedEventArgs e)
