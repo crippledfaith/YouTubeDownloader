@@ -11,6 +11,7 @@
     Height="225"
     Closing="MainWindowOnClosing"
     Icon="/icon.ico"
+    WindowStartupLocation="Manual"
     ResizeMode="CanMinimize"
     ShowMinButton="True" Loaded="MetroWindowLoaded"
     mc:Ignorable="d">

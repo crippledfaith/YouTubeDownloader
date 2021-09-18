@@ -38,6 +38,7 @@ namespace YouTubeDownLoader.Windows
 
         public MainWindow()
         {
+            //Properties.Settings.Default.Reset();
             InitializeComponent();
             keypressTimer = new System.Windows.Forms.Timer();
             keypressTimer.Tick += KeypressTimerTick;
@@ -54,6 +55,15 @@ namespace YouTubeDownLoader.Windows
             ShowMoreSettings();
             AudioTypeToggle();
             VideoTypeToggle();
+            if(Properties.Settings.Default.FistLoaded)
+            {
+                this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            }
+            else
+            {
+                this.Top = Properties.Settings.Default.WindowTop;
+                this.Left = Properties.Settings.Default.WindowLeft;
+            }
             Helper.UpdateFolderAndFfmpegConfig();
         }
 
@@ -467,10 +477,7 @@ namespace YouTubeDownLoader.Windows
         {
             keypressTimer.Stop();
             keypressTimer.Start();
-
         }
-
-      
 
         private void VideoCheckBoxOnClick(object sender, RoutedEventArgs e)
         {
@@ -518,6 +525,9 @@ namespace YouTubeDownLoader.Windows
 
         private void MainWindowOnClosing(object sender, CancelEventArgs e)
         {
+            Properties.Settings.Default.WindowTop = this.Top;
+            Properties.Settings.Default.WindowLeft = this.Left;
+            Properties.Settings.Default.Save();
             _searchWindow?.Close();
         }
 
