@@ -11,6 +11,8 @@
     Width="350"
     Height="130"
     ResizeMode="NoResize"
+    ShowInTaskbar="False"
+    ShowSystemMenu="False"
     Icon="../icon.ico"
     mc:Ignorable="d">
     <Grid >

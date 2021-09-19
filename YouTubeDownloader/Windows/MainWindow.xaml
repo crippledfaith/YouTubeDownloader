@@ -14,7 +14,8 @@
     WindowStartupLocation="Manual"
     ResizeMode="CanMinimize"
     ShowMinButton="True" 
-    Loaded="MetroWindowLoaded"
+    Loaded="WindowLoaded"
+    StateChanged="WindowOnStateChanged"
     ShowSystemMenu="False"
     mc:Ignorable="d">
     <mah:MetroWindow.RightWindowCommands>

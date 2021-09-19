@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using FFMpegCore;
@@ -15,7 +16,9 @@ using WK.Libraries.SharpClipboardNS;
 using YouTubeDownLoader.Models;
 using YouTubeDownLoader.Services;
 using YoutubeExplode;
+using Application = System.Windows.Application;
 using Container = YoutubeExplode.Videos.Streams.Container;
+using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 
 namespace YouTubeDownLoader.Windows
 {
@@ -32,6 +35,8 @@ namespace YouTubeDownLoader.Windows
         private readonly System.Windows.Forms.Timer keypressTimer;
         private readonly System.Windows.Forms.Timer showSettingTimers;
         private SearchWindow _searchWindow;
+        private readonly NotifyIcon _notifyIcon;
+        private ContextMenuStrip _contextMenu = new ContextMenuStrip();
         #endregion
 
         #region Constructor
@@ -64,6 +69,13 @@ namespace YouTubeDownLoader.Windows
                 this.Top = Properties.Settings.Default.WindowTop;
                 this.Left = Properties.Settings.Default.WindowLeft;
             }
+            _notifyIcon = new NotifyIcon();
+            _notifyIcon.Visible = true;
+            _notifyIcon.Icon = Properties.Resources.icon;
+            _notifyIcon.DoubleClick += NotifyIconDoubleClick;
+            CreateIconMenuStructure("Open");
+            CreateIconMenuStructure("Exit");
+            _notifyIcon.ContextMenuStrip = _contextMenu;
             Helper.UpdateFolderAndFfmpegConfig();
         }
 
@@ -403,7 +415,6 @@ namespace YouTubeDownLoader.Windows
             UpdateSettingGrid();
         }
 
-
         private void AudioTypeToggle()
         {
             var isAudioCheckBoxChecked = AudioCheckBox.IsChecked.HasValue && AudioCheckBox.IsChecked.Value;
@@ -421,9 +432,31 @@ namespace YouTubeDownLoader.Windows
             UpdateSettingGrid();
         }
 
+        public void CreateIconMenuStructure(string caption)
+        {
+            _contextMenu.Items.Add(caption, null, NotifyIconContextMenuOnClick);
+        }
+
         #endregion
 
         #region UI Event Methords
+
+        private void NotifyIconContextMenuOnClick(object sender, EventArgs e)
+        {
+            var menuItem = (ToolStripMenuItem)sender;
+            switch (menuItem.Text)
+            {
+                case "Exit":
+                    System.Windows.Application.Current.Shutdown(0);
+                    break;
+                case "Open":
+                    this.Show();
+                    this.WindowState = WindowState.Normal;
+                    ShowInTaskbar = true;
+                    this.Activate();
+                    break;
+            }
+        }
         private void VideoTypeComboboxOnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             UpdateSettingGrid();
@@ -528,15 +561,15 @@ namespace YouTubeDownLoader.Windows
             Properties.Settings.Default.WindowTop = this.Top;
             Properties.Settings.Default.WindowLeft = this.Left;
             Properties.Settings.Default.Save();
+            _notifyIcon.Visible = false;
+            _notifyIcon.Dispose();
             _searchWindow?.Close();
         }
 
-        private void MetroWindowLoaded(object sender, RoutedEventArgs e)
+        private void WindowLoaded(object sender, RoutedEventArgs e)
         {
             showSettingTimers.Start();
-
         }
-
 
         private void ShowSettingTimersTick(object sender, EventArgs e)
         {
@@ -552,6 +585,23 @@ namespace YouTubeDownLoader.Windows
         private async void KeypressTimerTick(object sender, EventArgs e)
         {
             await ValidUrl(LinkTextBox.Text);
+        }
+
+        private void NotifyIconDoubleClick(object sender, EventArgs e)
+        {
+            this.Show();
+            this.WindowState = WindowState.Normal;
+            ShowInTaskbar = true;
+            this.Activate();
+        }
+
+        private void WindowOnStateChanged(object sender, EventArgs e)
+        {
+            if (this.WindowState == WindowState.Minimized)
+            {
+                this.Hide();
+                ShowInTaskbar = false;
+            }
         }
         #endregion
 

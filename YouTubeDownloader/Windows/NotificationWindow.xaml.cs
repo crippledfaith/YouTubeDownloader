@@ -50,7 +50,6 @@ namespace YouTubeDownLoader.Windows
         {
             _timer.Stop();
             _timer.Dispose();
-  
         }
 
         private void WindowLoaded(object sender, RoutedEventArgs e)

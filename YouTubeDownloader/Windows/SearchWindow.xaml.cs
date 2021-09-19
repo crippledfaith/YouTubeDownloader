@@ -78,5 +78,10 @@ namespace YouTubeDownLoader.Windows
             if(e.Key== Key.Enter)
                 await Search(SearchTextBox.Text);
         }
+
+        private void WindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            _cancelationToken.Cancel();
+        }
     }
 }
