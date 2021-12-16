@@ -66,8 +66,8 @@ namespace YouTubeDownLoader.Windows
             }
             else
             {
-                this.Top = Properties.Settings.Default.WindowTop;
-                this.Left = Properties.Settings.Default.WindowLeft;
+                this.Top = Properties.Settings.Default.MainWindowTop;
+                this.Left = Properties.Settings.Default.MainWindowLeft;
             }
             _notifyIcon = new NotifyIcon();
             _notifyIcon.Visible = true;
@@ -558,8 +558,8 @@ namespace YouTubeDownLoader.Windows
 
         private void MainWindowOnClosing(object sender, CancelEventArgs e)
         {
-            Properties.Settings.Default.WindowTop = this.Top;
-            Properties.Settings.Default.WindowLeft = this.Left;
+            Properties.Settings.Default.MainWindowTop = this.Top;
+            Properties.Settings.Default.MainWindowLeft = this.Left;
             Properties.Settings.Default.Save();
             _notifyIcon.Visible = false;
             _notifyIcon.Dispose();

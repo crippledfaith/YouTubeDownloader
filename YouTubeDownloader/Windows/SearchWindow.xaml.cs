@@ -1,21 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Shapes;
-using AngleSharp.Html.Dom;
 using YouTubeDownLoader.Models;
 using YoutubeExplode;
-using YoutubeExplode.Common;
 
 namespace YouTubeDownLoader.Windows
 {
@@ -30,6 +21,17 @@ namespace YouTubeDownLoader.Windows
         {
             InitializeComponent();
             DataGrid.ItemsSource = observableCollection;
+            if (Properties.Settings.Default.SearchWindowFirstLoaded)
+            {
+                this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                Properties.Settings.Default.SearchWindowFirstLoaded = false;
+                Properties.Settings.Default.Save();
+            }
+            else
+            {
+                this.Top = Properties.Settings.Default.SearchWindowTop;
+                this.Left = Properties.Settings.Default.SearchWindowLeft;
+            }
         }
 
         private async void SearchButton_OnClick(object sender, RoutedEventArgs e)
@@ -75,13 +77,17 @@ namespace YouTubeDownLoader.Windows
 
         private async void SearchTextBoxKeyDown(object sender, KeyEventArgs e)
         {
-            if(e.Key== Key.Enter)
+            if (e.Key == Key.Enter)
                 await Search(SearchTextBox.Text);
         }
 
         private void WindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            _cancelationToken.Cancel();
+            if (_cancelationToken != null)
+                _cancelationToken.Cancel();
+            Properties.Settings.Default.SearchWindowTop = this.Top;
+            Properties.Settings.Default.SearchWindowLeft = this.Left;
+            Properties.Settings.Default.Save();
         }
     }
 }

@@ -13,7 +13,7 @@
     <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <Platforms>AnyCPU;x64</Platforms>
-    <Version>1.0.0.5</Version>
+    <Version>1.0.0.6</Version>
     <LangVersion>8</LangVersion>
   </PropertyGroup>
 
@@ -44,8 +44,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Python\YoutubeExplode\YoutubeExplode.Converter\YoutubeExplode.Converter.csproj" />
-    <ProjectReference Include="..\..\..\Python\YoutubeExplode\YoutubeExplode\YoutubeExplode.csproj" />
+    <ProjectReference Include="..\..\..\OtherRepos\YoutubeExplode\YoutubeExplode\YoutubeExplode.csproj" />
   </ItemGroup>
 
   <ItemGroup>

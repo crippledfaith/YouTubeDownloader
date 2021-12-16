@@ -98,24 +98,60 @@ namespace YouTubeDownLoader.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public double WindowTop {
+        public double MainWindowTop {
             get {
-                return ((double)(this["WindowTop"]));
+                return ((double)(this["MainWindowTop"]));
             }
             set {
-                this["WindowTop"] = value;
+                this["MainWindowTop"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public double WindowLeft {
+        public double MainWindowLeft {
             get {
-                return ((double)(this["WindowLeft"]));
+                return ((double)(this["MainWindowLeft"]));
             }
             set {
-                this["WindowLeft"] = value;
+                this["MainWindowLeft"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public double SearchWindowTop {
+            get {
+                return ((double)(this["SearchWindowTop"]));
+            }
+            set {
+                this["SearchWindowTop"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public double SearchWindowLeft {
+            get {
+                return ((double)(this["SearchWindowLeft"]));
+            }
+            set {
+                this["SearchWindowLeft"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool SearchWindowFirstLoaded {
+            get {
+                return ((bool)(this["SearchWindowFirstLoaded"]));
+            }
+            set {
+                this["SearchWindowFirstLoaded"] = value;
             }
         }
     }
