@@ -11,12 +11,12 @@
     Height="225"
     Closing="MainWindowOnClosing"
     Icon="/icon.ico"
-    WindowStartupLocation="Manual"
-    ResizeMode="CanMinimize"
-    ShowMinButton="True" 
     Loaded="WindowLoaded"
-    StateChanged="WindowOnStateChanged"
+    ResizeMode="CanMinimize"
+    ShowMinButton="True"
     ShowSystemMenu="False"
+    StateChanged="WindowOnStateChanged"
+    WindowStartupLocation="Manual"
     mc:Ignorable="d">
     <mah:MetroWindow.RightWindowCommands>
         <mah:WindowCommands>
@@ -57,7 +57,7 @@
     </mah:MetroWindow.RightWindowCommands>
 
     <Grid>
-        <Grid Grid.Column="0" >
+        <Grid Grid.Column="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -65,9 +65,10 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <StackPanel Margin="0,5,0,0"
+            <StackPanel
                 x:Name="AddVideoPanel"
                 Grid.Row="0"
+                Margin="0,5,0,0"
                 Orientation="Horizontal">
                 <Label
                     Margin="5,0,5,0"
@@ -91,7 +92,7 @@
                     Margin="5,0,5,0"
                     Content="Auto Start" />
             </StackPanel>
-            <Separator Grid.Row="1" Margin="5"/>
+            <Separator Grid.Row="1" Margin="5" />
             <Grid x:Name="VideoInfoGrid" Grid.Row="2">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -118,10 +119,10 @@
                     <Label Content="Title: " />
                     <Label
                         x:Name="TitleLabel"
-                        FontWeight="Bold"
-                        FontSize="12"
                         Grid.Row="0"
-                        Grid.Column="1" />
+                        Grid.Column="1"
+                        FontSize="12"
+                        FontWeight="Bold" />
 
                     <StackPanel
                         Grid.Row="1"
@@ -129,7 +130,7 @@
                         Grid.ColumnSpan="2"
                         Orientation="Horizontal">
                         <Label Content="Author: " />
-                        <Label x:Name="AuthorLabel" Width="87"  />
+                        <Label x:Name="AuthorLabel" Width="87" />
                         <Label Content="Length: " />
                         <Label x:Name="LengthLabel" Width="100" />
 
@@ -142,7 +143,7 @@
                         <Label Content="View: " />
                         <Label x:Name="ViewLabel" Width="100" />
                         <Label Content="Rating: " />
-                        <Label x:Name="RatingLabel"  />
+                        <Label x:Name="RatingLabel" />
 
 
                     </StackPanel>
@@ -161,14 +162,23 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <ToggleButton  Margin="5,0,0,0" x:Name="ShowMoreToggleButton" Click="ShowMoreToggleButtonClick" ToolTip="More Video and Audio Options">
-                    <iconPacks:PackIconFontAwesome 
-                                        Width="15"
-                                        Height="15"
-                                        VerticalAlignment="Center"
-                                        Kind="EllipsisVSolid" />
+                <ToggleButton
+                    x:Name="ShowMoreToggleButton"
+                    Margin="5,0,0,0"
+                    Click="ShowMoreToggleButtonClick"
+                    ToolTip="More Video and Audio Options">
+                    <iconPacks:PackIconFontAwesome
+                        Width="15"
+                        Height="15"
+                        VerticalAlignment="Center"
+                        Kind="EllipsisVSolid" />
                 </ToggleButton>
-                <Grid x:Name="SettingsGrid" Grid.Row="0" Grid.Column="1" Margin="5,0,0,0" Visibility="Collapsed">
+                <Grid
+                    x:Name="SettingsGrid"
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Margin="5,0,0,0"
+                    Visibility="Collapsed">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
@@ -204,15 +214,18 @@
                         SelectionChanged="AudioTypeComboboxOnSelectionChanged" />
 
                 </Grid>
-                <Grid x:Name="SimpleSettingGrid" Grid.Row="0" Grid.Column="1" Visibility="Visible"  Margin="5,0,0,0">
+                <Grid
+                    x:Name="SimpleSettingGrid"
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Margin="5,0,0,0"
+                    Visibility="Visible">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <Label
-                        Margin="5,0,10,0"
-                        Content="Video And Audio:" />
+                    <Label Margin="5,0,10,0" Content="Video And Audio:" />
                     <ComboBox
                         x:Name="VideoAudioTypeCombobox"
                         Grid.Row="0"
@@ -238,9 +251,9 @@
                         Width="85"
                         Margin="5,0,5,0"
                         Click="DownloadButtonOnClick"
-                        ToolTip="Download"
                         Content="0 bytes"
-                        IsEnabled="False">
+                        IsEnabled="False"
+                        ToolTip="Download">
                         <Button.ContentTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
@@ -260,23 +273,25 @@
                     </Button>
                     <Button
                         x:Name="CancelButton"
-                        ToolTip="Cancel"
                         Grid.Row="0"
                         Grid.Column="2"
                         Margin="0,0,5,0"
                         Click="CancelButtonOnClick"
                         Content="Cancel"
-                        IsEnabled="False" />
+                        IsEnabled="False"
+                        ToolTip="Cancel" />
                 </Grid>
-                <Separator Margin="5,0,5,0"
+                <Separator
                     Grid.Row="1"
                     Grid.Column="0"
-                    Grid.ColumnSpan="3" />
+                    Grid.ColumnSpan="3"
+                    Margin="5,0,5,0" />
                 <Grid
-                    x:Name="ProgressGrid" Margin="5,0,5,5"
+                    x:Name="ProgressGrid"
                     Grid.Row="2"
                     Grid.Column="0"
-                    Grid.ColumnSpan="3">
+                    Grid.ColumnSpan="3"
+                    Margin="5,0,5,5">
                     <ProgressBar x:Name="ProgressBar" Grid.Column="0" />
                     <TextBlock
                         x:Name="ProgressTextBlock"

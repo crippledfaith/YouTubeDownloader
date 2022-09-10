@@ -65,7 +65,7 @@ namespace YouTubeDownLoader.Models
             this._video = video;
             Title = _video.Title;
             Url = video.Url;
-            Author = video.Author.Title;
+            Author = video.Author.ChannelTitle;
             Duration = video.Duration.ToString();
             Image = new BitmapImage(new Uri(video.Thumbnails[0].Url));
             

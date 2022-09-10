@@ -102,7 +102,7 @@ namespace YouTubeDownLoader.Windows
                     var originalUri = video.Thumbnails[0].Url;
                     VideoImage.Source = new BitmapImage(new Uri(originalUri));
                     TitleLabel.Content = video.Title;
-                    AuthorLabel.Content = video.Author.Title;
+                    AuthorLabel.Content = video.Author.ChannelTitle;
                     ViewLabel.Content = video.Engagement.ViewCount.ToString("N0");
                     LengthLabel.Content = video.Duration.HasValue ? video.Duration.Value.ToString("g") : "0:0:0";
                     RatingLabel.Content = $"{video.Engagement.LikeCount:N0} likes / {video.Engagement.DislikeCount:N0} dislikes";
