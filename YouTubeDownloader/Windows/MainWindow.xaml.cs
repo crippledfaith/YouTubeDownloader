@@ -116,6 +116,9 @@ namespace YouTubeDownLoader.Windows
                     DownloadButton.IsEnabled = true;
                     if (AutoStartCheckBox.IsChecked.HasValue && AutoStartCheckBox.IsChecked.Value)
                     {
+                        IsEnableDownloadButton(true);
+                        EnableControls(true);
+                        ProgressBar.IsIndeterminate = false;
                         await StartDownloadingProcess();
                     }
                 }
